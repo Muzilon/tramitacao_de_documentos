@@ -8,7 +8,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        try {
+          const t = localStorage.getItem('docflow_theme');
+          if (t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="paleta.css">
     <link rel="stylesheet" href="formulario.css">
+    <!-- Biblioteca SheetJS para leitura e manipulação de arquivos Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   </head>
   <body>
     <!-- Topo da Aplicação (Header SaaS) -->
@@ -56,9 +69,24 @@
           </a>
         </nav>
 
-        <div class="header-badge">
-          <span class="pulse-indicator"></span>
-          <span>Sincronizado com SharePoint</span>
+        <div class="header-right-area">
+          <div class="header-badge">
+            <span class="pulse-indicator"></span>
+            <span>SharePoint</span>
+          </div>
+
+          <!-- Menu de Engrenagens (Configurações, Tema & Sincronização) -->
+          <div class="header-settings-wrapper" id="header-settings-wrapper">
+            <button type="button" class="header-settings-btn" id="btn-settings-toggle" aria-label="Configurações e Sincronização" title="Configurações & Sincronização">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </button>
+            <div class="header-settings-dropdown" id="header-settings-dropdown">
+              <!-- Conteúdo renderizado dinamicamente pelo data-service.js -->
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -195,7 +223,7 @@
         </div>
 
         <div class="tabela-container">
-          <table>
+          <table class="tabela-tramitacoes">
             <thead>
               <tr>
                 <th>Código</th>
@@ -213,34 +241,43 @@
       </section>
     </main>
 
-    <script>
+    <script type="module">
+      import {
+        obterTramitacoes,
+        aoAtualizarDados,
+        inicializarBarraSincronizacao,
+        inicializarMenuConfiguracoes,
+        buscarDadosDoPowerAutomate
+      } from './data-service.js';
+
       (() => {
-        const tramitacoes = JSON.parse(localStorage.getItem('tramitacoes')) || [];
-        const total = tramitacoes.length;
+        let tramitacoes = obterTramitacoes();
 
-        // Contadores
-        let countRevisao = 0;
-        let countPendente = 0;
-        let countAprovado = 0;
+        function renderizarDashboard() {
+          const total = tramitacoes.length;
 
-        tramitacoes.forEach(t => {
-          const s = (t.status || '').toLowerCase().trim();
-          if (s === 'em revisão' || s === 'em revisao') countRevisao++;
-          else if (s === 'pendente') countPendente++;
-          else if (s === 'aprovado') countAprovado++;
-        });
+          // Contadores
+          let countRevisao = 0;
+          let countPendente = 0;
+          let countAprovado = 0;
 
-        // Atualiza números
-        document.getElementById('total-docs').textContent = total;
-        document.getElementById('total-revisao').textContent = countRevisao;
-        document.getElementById('total-pendente').textContent = countPendente;
-        document.getElementById('total-aprovado').textContent = countAprovado;
+          tramitacoes.forEach(t => {
+            const s = (t.status || '').toLowerCase().trim();
+            if (s === 'em revisão' || s === 'em revisao') countRevisao++;
+            else if (s === 'pendente') countPendente++;
+            else if (s === 'aprovado') countAprovado++;
+          });
 
-        // Barras e percentuais
-        if (total > 0) {
-          const pctRev = Math.round((countRevisao / total) * 100);
-          const pctPen = Math.round((countPendente / total) * 100);
-          const pctApr = Math.round((countAprovado / total) * 100);
+          // Atualiza números
+          document.getElementById('total-docs').textContent = total;
+          document.getElementById('total-revisao').textContent = countRevisao;
+          document.getElementById('total-pendente').textContent = countPendente;
+          document.getElementById('total-aprovado').textContent = countAprovado;
+
+          // Barras e percentuais
+          const pctRev = total > 0 ? Math.round((countRevisao / total) * 100) : 0;
+          const pctPen = total > 0 ? Math.round((countPendente / total) * 100) : 0;
+          const pctApr = total > 0 ? Math.round((countAprovado / total) * 100) : 0;
 
           document.getElementById('bar-revisao').style.width = pctRev + '%';
           document.getElementById('pct-revisao').textContent = pctRev + '% do total';
@@ -250,43 +287,51 @@
 
           document.getElementById('bar-aprovado').style.width = pctApr + '%';
           document.getElementById('pct-aprovado').textContent = pctApr + '% do total';
-        }
 
-        // Tabela de recentes (últimos 5)
-        const tbody = document.getElementById('tabela-recentes');
-        if (tbody) {
-          if (tramitacoes.length === 0) {
-            tbody.innerHTML = `
-              <tr>
-                <td colspan="7" class="tabela-vazia">
-                  <p>Nenhuma tramitação registrada ainda. Clique em "Registrar Nova Tramitação" para começar!</p>
-                </td>
-              </tr>
-            `;
-          } else {
-            const ultimos = [...tramitacoes].reverse().slice(0, 5);
-            ultimos.forEach(item => {
-              const tr = document.createElement('tr');
-              let badgeClass = 'badge-default';
-              const s = (item.status || '').toLowerCase().trim();
-              if (s === 'aprovado') badgeClass = 'badge-aprovado';
-              else if (s.includes('revis')) badgeClass = 'badge-revisao';
-              else if (s === 'pendente') badgeClass = 'badge-pendente';
-
-              const areaDisc = [item.area, item.disciplina].filter(Boolean).join(' • ') || '-';
-              tr.innerHTML = `
-                <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 600;">${item.codigo || '-'}</code></td>
-                <td><strong style="color: #0f172a;">${item.titulo}</strong></td>
-                <td>${item.tipoDocumento || '-'}</td>
-                <td style="text-align: center;">${item.revisao ?? '0'}</td>
-                <td><span class="badge ${badgeClass}">${item.status || '-'}</span></td>
-                <td>${item.remetente || '-'}</td>
-                <td>${areaDisc}</td>
+          // Tabela de recentes (últimos 5)
+          const tbody = document.getElementById('tabela-recentes');
+          if (tbody) {
+            if (tramitacoes.length === 0) {
+              tbody.innerHTML = `
+                <tr>
+                  <td colspan="7" class="tabela-vazia">
+                    <p>Nenhuma tramitação registrada ainda. Você pode carregar o Excel ou clicar em "Registrar Nova Tramitação"!</p>
+                  </td>
+                </tr>
               `;
-              tbody.appendChild(tr);
-            });
+            } else {
+              tbody.innerHTML = '';
+              const ultimos = [...tramitacoes].reverse().slice(0, 5);
+              ultimos.forEach(item => {
+                const tr = document.createElement('tr');
+                let badgeClass = 'badge-default';
+                const s = (item.status || '').toLowerCase().trim();
+                if (s === 'cancelado') badgeClass = 'badge-cancelado';
+                else if (s === 'aprovado') badgeClass = 'badge-aprovado';
+                else if (s.includes('revis')) badgeClass = 'badge-revisao';
+                else if (s === 'pendente') badgeClass = 'badge-pendente';
+
+                const areaDisc = [item.area, item.disciplina].filter(Boolean).join(' • ') || '-';
+                tr.innerHTML = `
+                  <td><span class="tabela-codigo">${item.codigo || '-'}</span></td>
+                  <td><strong class="tabela-titulo-doc">${item.titulo || '-'}</strong></td>
+                  <td>${item.tipoDocumento || '-'}</td>
+                  <td style="text-align: center;">${item.revisao ?? '0'}</td>
+                  <td><span class="badge ${badgeClass}">${item.status || '-'}</span></td>
+                  <td>${item.remetente || '-'}</td>
+                  <td>${areaDisc}</td>
+                `;
+                tbody.appendChild(tr);
+              });
+            }
           }
         }
+
+        // Reage à importação de planilha ou sincronização na nuvem
+        aoAtualizarDados((novosDados) => {
+          tramitacoes = novosDados;
+          renderizarDashboard();
+        });
 
         // Ação de exportar rápido
         const btnExportar = document.getElementById('btn-exportar-home');
@@ -328,6 +373,17 @@
             URL.revokeObjectURL(url);
           });
         }
+
+        // Inicialização
+        renderizarDashboard();
+        inicializarMenuConfiguracoes('header-settings-dropdown');
+
+        // Sincronização em segundo plano se configurada
+        buscarDadosDoPowerAutomate().then((res) => {
+          if (res.sucesso) {
+            console.log(`DocFlow Home: ${res.total} itens sincronizados da nuvem.`);
+          }
+        });
       })();
     </script>
   </body>
