@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tramitação de Documentos</title>
+    <!-- Conexão com o arquivo CSS -->
+    <link rel="stylesheet" href="formulario.css">
+  </head>
+  <body>
+    <h1>Nova Tramitação de Documento 📋</h1>
+
+    <form id="form-tramitacao">
+      <!-- Título -->
+      <div>
+        <label for="titulo">Título:</label>
+        <input type="text" id="titulo" name="titulo" placeholder="Ex: Matriz de Riscos - Custos" required>
+      </div>
+
+      <!-- Código do Documento -->
+      <div>
+        <label for="codigo">Código do Documento:</label>
+        <input type="text" id="codigo" name="codigo" placeholder="Ex: MR-IND-0001-CTO-001">
+      </div>
+
+      <!-- Tipo de Documento (Padrão SGI) -->
+      <div>
+        <label for="tipo-documento">Tipo de Documento:</label>
+        <select id="tipo-documento" name="tipoDocumento" required>
+          <option value="">Selecione um tipo...</option>
+          <option value="MP - Mapas / Riscos">MP - Mapas / Riscos</option>
+          <option value="PR - Procedimento">PR - Procedimento</option>
+          <option value="IT - Instrução de Trabalho">IT - Instrução de Trabalho</option>
+          <option value="ET - Especificação Técnica">ET - Especificação Técnica</option>
+          <option value="RL - Relatório">RL - Relatório</option>
+          <option value="AT - Ata de Reunião">AT - Ata de Reunião</option>
+          <option value="LD - Lista de Documentos">LD - Lista de Documentos</option>
+        </select>
+      </div>
+
+      <!-- Data de Recebimento -->
+      <div>
+        <label for="data-recebimento">Data de Recebimento:</label>
+        <input type="date" id="data-recebimento" name="dataRecebimento" required>
+      </div>
+
+      <!-- Data de Revisão -->
+      <div>
+        <label for="data-revisao">Data de Revisão:</label>
+        <input type="date" id="data-revisao" name="dataRevisao">
+      </div>
+
+      <!-- N° de Revisão -->
+      <div>
+        <label for="revisao">N° de Revisão:</label>
+        <input type="number" id="revisao" name="revisao" min="0" value="0">
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+          <option value="Em Revisão">Em Revisão</option>
+          <option value="Pendente">Pendente</option>
+          <option value="Aprovado">Aprovado</option>
+        </select>
+      </div>
+
+      <!-- Remetente -->
+      <div>
+        <label for="remetente">Remetente:</label>
+        <input type="text" id="remetente" name="remetente" placeholder="Ex: Polyana" required>
+      </div>
+
+      <!-- Área -->
+      <div>
+        <label for="area">Área:</label>
+        <input type="text" id="area" name="area" placeholder="Ex: Custos">
+      </div>
+
+      <!-- Disciplina -->
+      <div>
+        <label for="disciplina">Disciplina:</label>
+        <input type="text" id="disciplina" name="disciplina" placeholder="Ex: Corporativo">
+      </div>
+
+      <!-- Observações -->
+      <div>
+        <label for="observacao">Observação:</label>
+        <textarea id="observacao" name="observacao" rows="3" placeholder="Informações adicionais..."></textarea>
+      </div>
+
+      <!-- Botão de Envio -->
+      <button type="submit">Registrar Tramitação</button>
+    </form>
+
+    <!-- Tabela de Documentos Cadastrados -->
+    <section id="secao-lista">
+      <h2>Documentos em Tramitação 📑</h2>
+      <div class="tabela-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Título</th>
+              <th>Tipo</th>
+              <th>Rev.</th>
+              <th>Status</th>
+              <th>Remetente</th>
+              <th>Área</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-corpo">
+            <!-- As linhas serão inseridas dinamicamente pelo JavaScript aqui -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Conexão com o arquivo JS no final do body -->
+    <script src="formulario.js"></script>
+  </body>
+</html>
