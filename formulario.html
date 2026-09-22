@@ -95,10 +95,17 @@
       <button type="submit">Registrar Tramitação</button>
     </form>
 
-    <!-- Tabela de Documentos Cadastrados -->
+ <!-- Tabela de Documentos Cadastrados -->
     <section id="secao-lista">
-      <h2>Documentos em Tramitação 📑</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="margin: 0;">Documentos em Tramitação 📑</h2>
+        <button id="btn-exportar" type="button" style="margin: 0; width: auto; padding: 8px 16px; background-color: #107c41;">
+          Exportar para CSV (Excel) 📥
+        </button>
+      </div>
+
       <div class="tabela-container">
+        <!-- Estrutura da tabela já existente -->
         <table>
           <thead>
             <tr>
@@ -111,14 +118,9 @@
               <th>Área</th>
             </tr>
           </thead>
-          <tbody id="tabela-corpo">
-            <!-- As linhas serão inseridas dinamicamente pelo JavaScript aqui -->
-          </tbody>
+          <tbody id="tabela-corpo"></tbody>
         </table>
       </div>
     </section>
-
-    <!-- Conexão com o arquivo JS no final do body -->
-    <script src="formulario.js"></script>
   </body>
 </html>
