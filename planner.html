@@ -8,7 +8,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        try {
+          const t = localStorage.getItem('docflow_theme');
+          if (t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="paleta.css">
     <link rel="stylesheet" href="formulario.css">
+    <!-- Biblioteca SheetJS para leitura e manipulação de arquivos Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script type="module" src="planner.js"></script>
   </head>
   <body>
@@ -57,14 +70,30 @@
           </a>
         </nav>
 
-        <div class="header-badge">
-          <span class="pulse-indicator"></span>
-          <span>Sincronizado com SharePoint</span>
+        <div class="header-right-area">
+          <div class="header-badge">
+            <span class="pulse-indicator"></span>
+            <span>SharePoint</span>
+          </div>
+
+          <!-- Menu de Engrenagens (Configurações, Tema & Sincronização) -->
+          <div class="header-settings-wrapper" id="header-settings-wrapper">
+            <button type="button" class="header-settings-btn" id="btn-settings-toggle" aria-label="Configurações e Sincronização" title="Configurações & Sincronização">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </button>
+            <div class="header-settings-dropdown" id="header-settings-dropdown">
+              <!-- Conteúdo renderizado dinamicamente pelo data-service.js -->
+            </div>
+          </div>
         </div>
       </div>
     </header>
 
     <main class="main-container">
+
       <!-- Indicadores Visuais de Desempenho (KPIs) -->
       <section class="kpi-grid">
         <div class="kpi-card">
@@ -83,7 +112,7 @@
 
         <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-label">Em Análise / Revisão</span>
+            <span class="kpi-label">Em Análise</span>
             <div class="kpi-icon-pill" style="background-color: #fffbeb; color: #d97706;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -98,7 +127,7 @@
 
         <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-label">Aguardando / Pendentes</span>
+            <span class="kpi-label">Pendentes</span>
             <div class="kpi-icon-pill" style="background-color: #f0f9ff; color: #0284c7;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -114,7 +143,7 @@
 
         <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-label">Taxa de Aprovação</span>
+            <span class="kpi-label">documentos aprovados</span>
             <div class="kpi-icon-pill" style="background-color: #f0fdf4; color: #16a34a;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -143,6 +172,15 @@
           <select id="filtro-area">
             <option value="">Todas as Áreas</option>
           </select>
+          <button id="btn-abrir-cancelados" type="button" class="btn-cancelados-pill" title="Ver documentos cancelados">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <span>Cancelados</span>
+            <span class="badge-count" id="count-cancelados">0</span>
+          </button>
           <button id="btn-novo-doc" class="btn-primario" style="padding: 7px 14px; font-size: 13px;" onclick="window.location.href='formulario.html'">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -156,7 +194,7 @@
       <!-- Quadro Planner (Kanban por Status) -->
       <section class="planner-board">
         <!-- Coluna 1: Em Revisão -->
-        <div class="planner-col" id="col-revisao" style="border-top: 3px solid #f59e0b;">
+        <div class="planner-col" id="col-revisao" style="border-top: 3px solid var(--cor-pessego, #F69463);">
           <div class="planner-col-header">
             <div class="col-header-left">
               <span class="col-dot amber"></span>
@@ -168,7 +206,7 @@
         </div>
 
         <!-- Coluna 2: Pendente -->
-        <div class="planner-col" id="col-pendente" style="border-top: 3px solid #0284c7;">
+        <div class="planner-col" id="col-pendente" style="border-top: 3px solid var(--cor-ambar, #FBBA6D);">
           <div class="planner-col-header">
             <div class="col-header-left">
               <span class="col-dot sky"></span>
@@ -180,7 +218,7 @@
         </div>
 
         <!-- Coluna 3: Aprovado -->
-        <div class="planner-col" id="col-aprovado" style="border-top: 3px solid #10b981;">
+        <div class="planner-col" id="col-aprovado" style="border-top: 3px solid var(--cor-verde, #668D58);">
           <div class="planner-col-header">
             <div class="col-header-left">
               <span class="col-dot green"></span>
@@ -203,75 +241,259 @@
             <span id="modal-revisao" class="card-rev" style="background:#f1f5f9; padding:3px 8px; border-radius:4px; font-weight:600;">Rev. 0</span>
             <span id="modal-status-badge"></span>
           </div>
-          <button type="button" id="btn-fechar-modal" class="pill-btn-close" title="Fechar">✕</button>
+          <div class="modal-header-right">
+            <button type="button" id="btn-editar-modal" class="btn-editar-modal" title="Editar informações do documento">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              <span>Editar</span>
+            </button>
+            <button type="button" id="btn-fechar-modal" class="pill-btn-close" title="Fechar">✕</button>
+          </div>
         </div>
 
-        <!-- Título do Documento -->
-        <div class="modal-title-area">
-          <h3 id="modal-titulo" class="modal-title">Título do Documento</h3>
-          <span id="modal-tipo" class="card-type-tag">Tipo de Documento</span>
-        </div>
+        <!-- ================= MODO DE VISUALIZAÇÃO ================= -->
+        <div id="modal-view-mode">
+          <!-- Título do Documento -->
+          <div class="modal-title-area">
+            <h3 id="modal-titulo" class="modal-title">Título do Documento</h3>
+            <span id="modal-tipo" class="card-type-tag">Tipo de Documento</span>
+          </div>
 
-        <!-- Conteúdo dos Detalhes em Grid -->
-        <div class="modal-body-grid">
-          <div class="modal-info-item">
-            <span class="modal-info-label">Remetente / Responsável</span>
-            <div class="user-info" style="margin-top: 5px;">
-              <span id="modal-avatar" class="avatar-initial">?</span>
-              <strong id="modal-remetente" style="color: #0f172a; font-size: 13px;">-</strong>
+          <!-- Conteúdo dos Detalhes em Grid -->
+          <div class="modal-body-grid">
+            <div class="modal-info-item">
+              <span class="modal-info-label">Remetente / Responsável</span>
+              <div class="user-info" style="margin-top: 5px;">
+                <span id="modal-avatar" class="avatar-initial">?</span>
+                <strong id="modal-remetente" style="color: #0f172a; font-size: 13px;">-</strong>
+              </div>
+            </div>
+
+            <div class="modal-info-item">
+              <span class="modal-info-label">Área & Disciplina</span>
+              <strong id="modal-area-disciplina" class="modal-info-value">-</strong>
+            </div>
+
+            <div class="modal-info-item">
+              <span class="modal-info-label">Data de Recebimento</span>
+              <strong id="modal-data-recebimento" class="modal-info-value">-</strong>
+            </div>
+
+            <div class="modal-info-item">
+              <span class="modal-info-label">Data Limite de Revisão</span>
+              <strong id="modal-data-revisao" class="modal-info-value">-</strong>
+            </div>
+
+            <div class="modal-info-item modal-item-full">
+              <span class="modal-info-label">Observações da Tramitação</span>
+              <p id="modal-observacao" class="modal-obs-text">-</p>
+            </div>
+
+            <!-- Seção de Arquivos e Pastas -->
+            <div class="modal-info-item modal-item-full modal-anexos-box">
+              <span class="modal-info-label">Arquivos & Pastas Vinculadas</span>
+
+              <!-- Alerta quando NÃO houver arquivos nem links -->
+              <div id="modal-alerta-sem-anexos" class="alerta-sem-anexo" style="display: none;">
+                <div class="alerta-icone">⚠️</div>
+                <div class="alerta-texto">
+                  <strong>Nenhum arquivo anexado ou link disponível</strong>
+                  <p>Você pode colar o link direto da pasta abaixo ou selecionar arquivos para criar a pasta automaticamente no SharePoint.</p>
+                </div>
+              </div>
+
+              <!-- Resumo dos arquivos existentes -->
+              <div id="modal-files-summary" class="modal-files-summary">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span>📄</span>
+                  <span id="modal-arquivo-principal" class="modal-file-name">Documento Principal: -</span>
+                </div>
+                <div id="modal-anexos-complementares-info" style="display:flex; align-items:center; gap:8px; margin-top: 6px;">
+                  <span>📁</span>
+                  <span id="modal-qtd-anexos" class="modal-file-name">Anexos Complementares: 0 arquivos</span>
+                </div>
+              </div>
+
+              <!-- Painel de Upload para anexar arquivos ao SharePoint -->
+              <div id="painel-upload-modal" class="painel-upload-modal" style="display: none;">
+                <div class="painel-upload-modal-titulo">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                  </svg>
+                  <span>Anexar Arquivos ao SharePoint</span>
+                </div>
+                <div class="grid-upload-modal">
+                  <div class="campo-upload-item">
+                    <label>Documento Principal (PDF/DOC):</label>
+                    <label for="modal-input-file-principal" class="btn-upload-trigger">
+                      <span>Escolher Arquivo</span>
+                      <input type="file" id="modal-input-file-principal" style="display: none;" />
+                    </label>
+                    <span id="modal-preview-doc-principal" class="nome-arquivo-preview">Nenhum</span>
+                  </div>
+                  <div class="campo-upload-item">
+                    <label>Anexos Complementares:</label>
+                    <label for="modal-input-files-anexos" class="btn-upload-trigger">
+                      <span>Adicionar Anexos</span>
+                      <input type="file" id="modal-input-files-anexos" multiple style="display: none;" />
+                    </label>
+                    <span id="modal-preview-qtd-anexos" class="nome-arquivo-preview">0 arquivos</span>
+                  </div>
+                </div>
+                <button type="button" id="btn-enviar-anexos-sharepoint" class="btn-salvar-anexos-sharepoint">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="16 16 12 12 8 16"></polyline>
+                    <line x1="12" y1="12" x2="12" y2="21"></line>
+                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+                  </svg>
+                  <span>Criar Pasta & Salvar Arquivos no SharePoint</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="modal-info-item">
-            <span class="modal-info-label">Área & Disciplina</span>
-            <strong id="modal-area-disciplina" class="modal-info-value">-</strong>
-          </div>
-
-          <div class="modal-info-item">
-            <span class="modal-info-label">Data de Recebimento</span>
-            <strong id="modal-data-recebimento" class="modal-info-value">-</strong>
-          </div>
-
-          <div class="modal-info-item">
-            <span class="modal-info-label">Data Limite de Revisão</span>
-            <strong id="modal-data-revisao" class="modal-info-value">-</strong>
-          </div>
-
-          <div class="modal-info-item modal-item-full">
-            <span class="modal-info-label">Observações da Tramitação</span>
-            <p id="modal-observacao" class="modal-obs-text">-</p>
-          </div>
-
-          <div class="modal-info-item modal-item-full modal-anexos-box">
-            <span class="modal-info-label">Arquivos & Pastas Vinculadas</span>
-            <div class="modal-files-summary">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span>📄</span>
-                <span id="modal-arquivo-principal" class="modal-file-name">Documento Principal: -</span>
-              </div>
-              <div id="modal-anexos-complementares-info" style="display:flex; align-items:center; gap:8px; margin-top: 6px;">
-                <span>📁</span>
-                <span id="modal-qtd-anexos" class="modal-file-name">Anexos Complementares: 0 arquivos</span>
-              </div>
+          <!-- Rodapé do Modal -->
+          <div class="modal-footer">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <a id="modal-link-sharepoint" href="#" target="_blank" class="btn-sharepoint-modal">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span id="modal-texto-link-sharepoint">Abrir Pasta no SharePoint</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+              <button type="button" id="btn-toggle-link-manual" class="btn-editar-modal" title="Editar ou inserir link da pasta manualmente" style="padding: 9px 12px;">
+                ✏️ Link
+              </button>
             </div>
+
+            <div id="modal-quick-actions" class="modal-actions-right"></div>
+          </div>
+
+          <!-- Painel inline para digitar link manual do SharePoint -->
+          <div id="painel-link-manual" class="painel-link-inline" style="display: none; margin: 0 24px 16px 24px;">
+            <input type="url" id="input-link-manual" placeholder="Cole aqui o URL da pasta do SharePoint..." />
+            <button type="button" id="btn-salvar-link-manual" class="btn-link-acao salvar">Salvar Link</button>
+            <button type="button" id="btn-cancelar-link-manual" class="btn-link-acao cancelar">Cancelar</button>
           </div>
         </div>
 
-        <!-- Rodapé do Modal com Link do SharePoint e Ações de Mudança de Status -->
-        <div class="modal-footer">
-          <a id="modal-link-sharepoint" href="#" target="_blank" class="btn-sharepoint-modal">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span>Abrir Pasta no SharePoint</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
-          </a>
+        <!-- ================= MODO DE EDIÇÃO ================= -->
+        <div id="modal-edit-mode" style="display: none;">
+          <form id="form-edicao-modal">
+            <div class="form-edicao-modal-grid">
+              <div class="edit-modal-box full-width">
+                <label for="edit-titulo">Título do Documento *</label>
+                <input type="text" id="edit-titulo" class="edit-modal-input" required />
+              </div>
 
-          <div id="modal-quick-actions" class="modal-actions-right"></div>
+              <div class="edit-modal-box">
+                <label for="edit-codigo">Código do Documento</label>
+                <input type="text" id="edit-codigo" class="edit-modal-input" />
+              </div>
+
+              <div class="edit-modal-box">
+                <label for="edit-tipo">Tipo de Documento</label>
+                <select id="edit-tipo" class="edit-modal-select">
+                  <option value="PR - Procedimento">PR - Procedimento</option>
+                  <option value="MP - Mapas / Riscos">MP - Mapas / Riscos</option>
+                  <option value="IT - Instrução de Trabalho">IT - Instrução de Trabalho</option>
+                  <option value="ET - Especificação Técnica">ET - Especificação Técnica</option>
+                  <option value="RL - Relatório">RL - Relatório</option>
+                  <option value="AT - Ata de Reunião">AT - Ata de Reunião</option>
+                  <option value="LD - Lista de Documentos">LD - Lista de Documentos</option>
+                  <option value="Memorial Descritivo">Memorial Descritivo</option>
+                </select>
+              </div>
+
+              <div class="edit-modal-box">
+                <label for="edit-status">Status</label>
+                <select id="edit-status" class="edit-modal-select">
+                  <option value="Em Revisão">Em Revisão</option>
+                  <option value="Pendente">Pendente</option>
+                  <option value="Aprovado">Aprovado</option>
+                  <option value="Cancelado">Cancelado</option>
+                </select>
+              </div>
+
+              <div class="edit-modal-box">
+                <label for="edit-revisao">N° de Revisão</label>
+                <input type="number" id="edit-revisao" min="0" class="edit-modal-input" />
+              </div>
+
+              <div class="edit-modal-box">
+                <label for="edit-remetente">Remetente / Responsável</label>
+                <input type="text" id="edit-remetente" class="edit-modal-input" />
+              </div>
+
+              <div class="edit-modal-box">
+                <label for="edit-area">Área / Setor</label>
+                <input type="text" id="edit-area" class="edit-modal-input" />
+              </div>
+
+              <div class="edit-modal-box">
+                <label for="edit-disciplina">Disciplina</label>
+                <input type="text" id="edit-disciplina" class="edit-modal-input" />
+              </div>
+
+              <div class="edit-modal-box">
+                <label for="edit-data-recebimento">Data de Recebimento</label>
+                <input type="date" id="edit-data-recebimento" class="edit-modal-input" />
+              </div>
+
+              <div class="edit-modal-box">
+                <label for="edit-data-revisao">Data Limite de Revisão</label>
+                <input type="date" id="edit-data-revisao" class="edit-modal-input" />
+              </div>
+
+              <div class="edit-modal-box full-width">
+                <label for="edit-observacao">Observações Complementares</label>
+                <textarea id="edit-observacao" rows="3" class="edit-modal-textarea"></textarea>
+              </div>
+            </div>
+
+            <div class="modal-edit-footer">
+              <button type="button" id="btn-cancelar-edicao" class="btn-cancelar-edicao">Cancelar</button>
+              <button type="submit" class="btn-salvar-edicao">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                <span>Salvar Alterações</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Flutuante de Documentos Cancelados -->
+    <div id="modal-cancelados" class="modal-overlay" style="display: none;">
+      <div class="modal-cancelados-card">
+        <div class="modal-cancelados-header">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <span>Documentos Cancelados</span>
+            <span class="badge-count" id="modal-cancelados-count" style="background:#ef4444; color:#fff; font-size:11px; padding:2px 8px; border-radius:12px; margin-left:6px;">0</span>
+          </h3>
+          <button type="button" class="btn-fechar-modal" id="btn-fechar-cancelados" title="Fechar">✕</button>
+        </div>
+        <div style="padding: 10px 20px 0 20px; font-size: 12px; color: #64748b;">
+          Estes documentos foram cancelados e não aparecem no quadro ativo. Você pode reativá-los a qualquer momento.
+        </div>
+        <div class="modal-cancelados-body" id="cards-cancelados">
+          <!-- Cards cancelados renderizados via JS -->
         </div>
       </div>
     </div>
