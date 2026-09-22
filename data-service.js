@@ -18,8 +18,131 @@ const CHAVE_STORAGE = 'tramitacoes';
 const CHAVE_ULTIMA_SINC = 'docflow_ultima_sincronizacao';
 const CHAVE_ORIGEM = 'docflow_origem_dados';
 const CHAVE_MODIFICACOES_LOCAIS = 'docflow_modificacoes_locais';
+export const CHAVE_HISTORICO = 'docflow_historico_alteracoes';
 
 const ouvintesAtualizacao = [];
+
+/**
+ * Gera ou preserva um ID único e consistente para cada documento
+ */
+export function gerarIdDocumento(item, index = 0) {
+  if (item && item.id && String(item.id).trim() !== '') {
+    return String(item.id).trim();
+  }
+  if (item && item.codigo && String(item.codigo).trim() !== '') {
+    return `DOC-${String(item.codigo).trim()}`;
+  }
+  return `DOC-${Date.now().toString(36).toUpperCase()}-${index + 1}`;
+}
+
+/**
+ * Obtém todos os registros da base de histórico de alterações
+ */
+export function obterTodoHistorico() {
+  try {
+    if (typeof localStorage === 'undefined') return [];
+    const raw = localStorage.getItem(CHAVE_HISTORICO);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error("Erro ao ler histórico de alterações:", e);
+    return [];
+  }
+}
+
+/**
+ * Salva a base completa de histórico no localStorage
+ */
+export function salvarTodoHistorico(lista) {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(Array.isArray(lista) ? lista : []));
+    }
+  } catch (e) {
+    console.error("Erro ao salvar histórico de alterações:", e);
+  }
+}
+
+/**
+ * Obtém o histórico cronológico de um documento específico pelo seu ID ou Código
+ */
+export function obterHistoricoDocumento(idOuCodigo) {
+  if (!idOuCodigo) return [];
+  const chave = String(idOuCodigo).trim().toLowerCase();
+  const todoHistorico = obterTodoHistorico();
+
+  return todoHistorico.filter(h => {
+    const hId = (h.idDocumento || '').trim().toLowerCase();
+    const hCod = (h.codigo || '').trim().toLowerCase();
+    const hPrim = (h.id || '').trim().toLowerCase();
+    return hId === chave || hCod === chave || hPrim === chave;
+  }).sort((a, b) => new Date(a.dataHora || 0) - new Date(b.dataHora || 0));
+}
+
+/**
+ * Adiciona um novo evento na base de histórico de alterações
+ */
+export function adicionarHistoricoAlteracao({
+  idDocumento,
+  codigo,
+  status,
+  statusAnterior = '',
+  destino = '',
+  responsavel = '',
+  observacao = '',
+  dataHora = null
+}) {
+  const agora = dataHora ? new Date(dataHora) : new Date();
+  const dataIso = agora.toISOString();
+
+  // Formatação amigável DD/MM/YYYY HH:mm
+  const dia = String(agora.getDate()).padStart(2, '0');
+  const mes = String(agora.getMonth() + 1).padStart(2, '0');
+  const ano = agora.getFullYear();
+  const hora = String(agora.getHours()).padStart(2, '0');
+  const min = String(agora.getMinutes()).padStart(2, '0');
+  const dataFormatada = `${dia}/${mes}/${ano} ${hora}:${min}`;
+
+  const novoRegistro = {
+    id: `HIST-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+    idDocumento: idDocumento || (codigo ? `DOC-${codigo}` : `DOC-${Date.now()}`),
+    codigo: codigo || '',
+    status: status || 'Recebido',
+    statusAnterior: statusAnterior || '',
+    dataHora: dataIso,
+    dataExibicao: dataFormatada,
+    destino: destino || 'Qualidade',
+    responsavel: responsavel || 'Usuário Atual',
+    observacao: observacao || ''
+  };
+
+  const todoHistorico = obterTodoHistorico();
+  todoHistorico.push(novoRegistro);
+  salvarTodoHistorico(todoHistorico);
+
+  return novoRegistro;
+}
+
+/**
+ * Garante que o documento possua pelo menos o evento inicial de criação/recebimento
+ */
+export function inicializarHistoricoSeNecessario(item) {
+  if (!item) return;
+  const idDoc = item.id || (item.codigo ? `DOC-${item.codigo}` : '');
+  const hist = obterHistoricoDocumento(idDoc || item.codigo);
+
+  if (hist.length === 0) {
+    adicionarHistoricoAlteracao({
+      idDocumento: idDoc,
+      codigo: item.codigo,
+      status: item.status || 'Recebido',
+      statusAnterior: '',
+      destino: item.area ? `${item.area} / Qualidade` : 'Equipe de Qualidade',
+      responsavel: item.remetente || 'Cadastro Inicial',
+      observacao: item.observacao || 'Registro inicial do documento.',
+      dataHora: item.dataRecebimento ? `${item.dataRecebimento}T09:00:00.000Z` : null
+    });
+  }
+}
 
 export function obterModificacoesLocais() {
   try {
@@ -33,24 +156,30 @@ export function obterModificacoesLocais() {
 
 /**
  * Consolida e desduplica itens duplicados no Excel pela chave (código ou título),
- * preservando o registro mais recente e com os dados mais completos.
+ * preservando o registro mais recente, os dados mais completos e o ID único.
  */
 export function desduplicarTramitacoes(lista) {
   if (!Array.isArray(lista)) return [];
   const mapa = new Map();
 
-  lista.forEach(item => {
+  lista.forEach((item, idx) => {
     if (!item) return;
     const chave = (item.codigo || '').trim().toLowerCase() || (item.titulo || '').trim().toLowerCase();
     if (!chave) return;
 
+    const idDoc = item.id || gerarIdDocumento(item, idx);
+
     if (!mapa.has(chave)) {
-      mapa.set(chave, { ...item });
+      mapa.set(chave, {
+        ...item,
+        id: idDoc
+      });
     } else {
       const existente = mapa.get(chave);
       mapa.set(chave, {
         ...existente,
         ...item,
+        id: existente.id || idDoc,
         codigo: item.codigo || existente.codigo,
         titulo: item.titulo || existente.titulo,
         status: item.status || existente.status,
@@ -62,7 +191,11 @@ export function desduplicarTramitacoes(lista) {
     }
   });
 
-  return Array.from(mapa.values());
+  const consolidados = Array.from(mapa.values());
+  // Inicializa o histórico para novos itens se necessário
+  consolidados.forEach(item => inicializarHistoricoSeNecessario(item));
+
+  return consolidados;
 }
 
 /**
@@ -194,6 +327,7 @@ export function normalizarItemExcel(linha) {
     return '';
   }
 
+  const id = getCampo('ID', 'Id', 'ID Documento', 'IdDocumento', 'id_documento', 'Identificador');
   const titulo = getCampo('Título', 'Titulo', 'Nome do Documento', 'Nome', 'titulo');
   const codigo = getCampo('Código do documento', 'Código', 'Codigo', 'Código do Documento', 'codigo');
   const status = getCampo('Status', 'Situação', 'Situacao', 'status') || 'Em Revisão';
@@ -215,9 +349,13 @@ export function normalizarItemExcel(linha) {
     return null;
   }
 
+  const codLimpo = String(codigo || '').trim();
+  const idDoc = String(id || '').trim() || (codLimpo ? `DOC-${codLimpo}` : `DOC-${Date.now().toString(36).toUpperCase()}`);
+
   return {
+    id: idDoc,
     titulo: String(titulo || 'Sem Título').trim(),
-    codigo: String(codigo || '').trim(),
+    codigo: codLimpo,
     status: String(status || 'Em Revisão').trim(),
     tipoDocumento: String(tipoDocumento || 'Procedimento').trim(),
     revisao: revisao !== '' ? String(revisao).trim() : '0',
@@ -235,7 +373,58 @@ export function normalizarItemExcel(linha) {
 }
 
 /**
+ * Normaliza linhas da aba de Histórico de Alterações
+ */
+export function normalizarItemHistorico(linha) {
+  if (!linha || typeof linha !== 'object') return null;
+
+  function getCampo(...nomesPossiveis) {
+    const chavesObjeto = Object.keys(linha);
+    for (const nome of nomesPossiveis) {
+      const nomeLimpo = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const chaveEncontrada = chavesObjeto.find(k => {
+        const kLimpo = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        return kLimpo === nomeLimpo;
+      });
+      if (chaveEncontrada && linha[chaveEncontrada] !== undefined && linha[chaveEncontrada] !== null) {
+        return linha[chaveEncontrada];
+      }
+    }
+    return '';
+  }
+
+  const id = getCampo('ID', 'Id', 'Identificador');
+  const idDocumento = getCampo('ID Documento', 'IdDocumento', 'id_documento', 'ID_Documento', 'Id Item', 'ID Item');
+  const codigo = getCampo('Código', 'Codigo', 'Código do Documento', 'codigo');
+  const status = getCampo('Status', 'Situação', 'status');
+  const statusAnterior = getCampo('Status Anterior', 'StatusAnterior', 'status_anterior');
+  const dataHora = getCampo('Data/Hora', 'Data Hora', 'dataHora', 'Data', 'Data de Alteração');
+  const destino = getCampo('Destino', 'destino', 'Pra onde vai', 'Para onde vai');
+  const responsavel = getCampo('Responsável', 'Responsavel', 'responsavel', 'Autor');
+  const observacao = getCampo('Observação', 'Observacao', 'observacao', 'Comentários');
+
+  if (!idDocumento && !codigo && !status) return null;
+
+  const codLimpo = String(codigo || '').trim();
+  const idDoc = String(idDocumento || (codLimpo ? `DOC-${codLimpo}` : '')).trim();
+
+  return {
+    id: id ? String(id).trim() : `HIST-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+    idDocumento: idDoc,
+    codigo: codLimpo,
+    status: String(status || 'Recebido').trim(),
+    statusAnterior: String(statusAnterior || '').trim(),
+    dataHora: dataHora ? String(dataHora).trim() : new Date().toISOString(),
+    dataExibicao: dataHora ? String(dataHora).trim() : '',
+    destino: String(destino || 'Qualidade').trim(),
+    responsavel: String(responsavel || 'Usuário Atual').trim(),
+    observacao: String(observacao || '').trim()
+  };
+}
+
+/**
  * Lê um arquivo local .xlsx/.xls/.csv usando a biblioteca SheetJS (XLSX)
+ * Suporta leitura simultânea da aba de Tramitações e da aba de Histórico de Alterações
  */
 export async function importarArquivoExcel(arquivo) {
   if (!window.XLSX) {
@@ -248,14 +437,23 @@ export async function importarArquivoExcel(arquivo) {
       try {
         const data = new Uint8Array(e.target.result);
         const workbook = window.XLSX.read(data, { type: 'array' });
-        
-        // Pega a primeira planilha (ou procura por uma chamada 'Tramitações'/'Documentos' se houver)
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        
-        // Converte para JSON
-        const linhasBrutas = window.XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-        
+
+        // Identifica aba principal e aba de histórico se existirem
+        let sheetPrincipalName = workbook.SheetNames[0];
+        let sheetHistoricoName = null;
+
+        for (const sName of workbook.SheetNames) {
+          const sLimpo = sName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          if (sLimpo.includes('historico') || sLimpo.includes('alteraco') || sLimpo.includes('log')) {
+            sheetHistoricoName = sName;
+          } else if (sLimpo.includes('tramitac') || sLimpo.includes('base') || sLimpo.includes('document')) {
+            sheetPrincipalName = sName;
+          }
+        }
+
+        const wsPrincipal = workbook.Sheets[sheetPrincipalName];
+        const linhasBrutas = window.XLSX.utils.sheet_to_json(wsPrincipal, { defval: '' });
+
         const tramitacoesValidas = desduplicarTramitacoes(
           linhasBrutas.map(normalizarItemExcel).filter(Boolean)
         );
@@ -264,10 +462,27 @@ export async function importarArquivoExcel(arquivo) {
           throw new Error("Nenhum documento válido encontrado na planilha. Verifique se as colunas estão preenchidas.");
         }
 
+        // Se encontrou aba de histórico, importa os eventos
+        let historicoImportado = [];
+        if (sheetHistoricoName && workbook.Sheets[sheetHistoricoName]) {
+          const wsHist = workbook.Sheets[sheetHistoricoName];
+          const linhasHistBrutas = window.XLSX.utils.sheet_to_json(wsHist, { defval: '' });
+          historicoImportado = linhasHistBrutas.map(normalizarItemHistorico).filter(Boolean);
+
+          if (historicoImportado.length > 0) {
+            const histAtual = obterTodoHistorico();
+            const mapaHist = new Map();
+            histAtual.forEach(h => mapaHist.set(h.id, h));
+            historicoImportado.forEach(h => mapaHist.set(h.id, h));
+            salvarTodoHistorico(Array.from(mapaHist.values()));
+          }
+        }
+
         salvarTramitacoes(tramitacoesValidas, `Arquivo: ${arquivo.name}`);
         resolve({
           sucesso: true,
           total: tramitacoesValidas.length,
+          totalHistorico: historicoImportado.length,
           itens: tramitacoesValidas
         });
       } catch (err) {
@@ -277,6 +492,57 @@ export async function importarArquivoExcel(arquivo) {
     reader.onerror = (err) => reject(err);
     reader.readAsArrayBuffer(arquivo);
   });
+}
+
+/**
+ * Exporta a base completa com duas abas: Tramitações e Histórico de Alterações
+ */
+export function exportarPlanilhaCompletaExcel(nomeArquivo = 'DocFlow_Tramitacoes_e_Historico.xlsx') {
+  if (!window.XLSX) {
+    console.warn("Biblioteca SheetJS não encontrada para exportação multi-aba.");
+    return false;
+  }
+
+  const tramitacoes = obterTramitacoes();
+  const historico = obterTodoHistorico();
+
+  const rowsTramitacoes = tramitacoes.map(t => ({
+    "ID": t.id || `DOC-${t.codigo || '0'}`,
+    "Código": t.codigo || '',
+    "Título": t.titulo || '',
+    "Status": t.status || 'Em Revisão',
+    "Tipo de Documento": t.tipoDocumento || '',
+    "Nº de Revisão": t.revisao ?? '0',
+    "Data de Recebimento": t.dataRecebimento || '',
+    "Data de Revisão": t.dataRevisao || '',
+    "Remetente": t.remetente || '',
+    "Área": t.area || '',
+    "Disciplina": t.disciplina || '',
+    "Observação": t.observacao || '',
+    "Link Anexo": t.linkAnexo || ''
+  }));
+
+  const rowsHistorico = historico.map(h => ({
+    "ID": h.id,
+    "ID Documento": h.idDocumento,
+    "Código": h.codigo || '',
+    "Status": h.status,
+    "Status Anterior": h.statusAnterior || '',
+    "Data/Hora": h.dataExibicao || h.dataHora,
+    "Destino": h.destino || '',
+    "Responsável": h.responsavel || '',
+    "Observação": h.observacao || ''
+  }));
+
+  const wb = window.XLSX.utils.book_new();
+  const wsTram = window.XLSX.utils.json_to_sheet(rowsTramitacoes);
+  const wsHist = window.XLSX.utils.json_to_sheet(rowsHistorico);
+
+  window.XLSX.utils.book_append_sheet(wb, wsTram, "Tramitações");
+  window.XLSX.utils.book_append_sheet(wb, wsHist, "Histórico de Alterações");
+
+  window.XLSX.writeFile(wb, nomeArquivo);
+  return true;
 }
 
 /**
@@ -700,6 +966,18 @@ export async function enviarArquivosParaSharePoint(dados, docPrincipalPayload, a
     sucesso: true,
     linkAnexo: linkFinal,
     nomePasta: pastaFinal
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.DocFlowDataService = {
+    obterTodoHistorico,
+    salvarTodoHistorico,
+    obterHistoricoDocumento,
+    adicionarHistoricoAlteracao,
+    inicializarHistoricoSeNecessario,
+    exportarPlanilhaCompletaExcel,
+    gerarIdDocumento
   };
 }
 
