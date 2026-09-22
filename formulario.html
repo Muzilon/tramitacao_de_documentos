@@ -8,8 +8,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        try {
+          const t = localStorage.getItem('docflow_theme');
+          if (t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
     <!-- Conexão com o arquivo CSS -->
+    <link rel="stylesheet" href="paleta.css">
     <link rel="stylesheet" href="formulario.css">
+    <!-- Biblioteca SheetJS para leitura e manipulação de arquivos Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script type="module" src="formulario.js"></script>
   </head>
   <body>
@@ -58,14 +71,30 @@
           </a>
         </nav>
 
-        <div class="header-badge">
-          <span class="pulse-indicator"></span>
-          <span>Sincronizado com SharePoint</span>
+        <div class="header-right-area">
+          <div class="header-badge">
+            <span class="pulse-indicator"></span>
+            <span>SharePoint</span>
+          </div>
+
+          <!-- Menu de Engrenagens (Configurações, Tema & Sincronização) -->
+          <div class="header-settings-wrapper" id="header-settings-wrapper">
+            <button type="button" class="header-settings-btn" id="btn-settings-toggle" aria-label="Configurações e Sincronização" title="Configurações & Sincronização">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </button>
+            <div class="header-settings-dropdown" id="header-settings-dropdown">
+              <!-- Conteúdo renderizado dinamicamente pelo data-service.js -->
+            </div>
+          </div>
         </div>
       </div>
     </header>
 
     <main class="main-container main-pill-container">
+
       <!-- Card do Formulário Estilo Pill / Floating Labels (Imagem de Referência) -->
       <section class="card-formulario-pill">
         <!-- Topo com Toggle Capsule e Botão Fechar/Reset -->
@@ -80,12 +109,6 @@
         <!-- Título e Subtítulo -->
         <div class="pill-card-title-area">
           <h2 class="pill-card-title">Registro de Documento – DocFlow</h2>
-          <!-- Chips / Indicadores de Etapa como no design -->
-          <div class="pill-tags-row">
-            <span class="pill-tag active"><span class="check-dot">✓</span> Dados do Documento</span>
-            <span class="pill-tag"><span class="circle-dot"></span> Prazos & Status</span>
-            <span class="pill-tag"><span class="circle-dot"></span> Responsáveis</span>
-          </div>
         </div>
 
         <form id="form-tramitacao">
@@ -124,6 +147,7 @@
                 <option value="Em Revisão">Em Revisão</option>
                 <option value="Pendente">Pendente</option>
                 <option value="Aprovado">Aprovado</option>
+                <option value="Cancelado">Cancelado</option>
               </select>
             </div>
 
@@ -212,14 +236,14 @@
             </div>
           </div>
 
-          <!-- Rodapé do Card (Painel Inferior Azul Suave como na imagem de referência) -->
+          <!-- Rodapé do Card com Ação de Registro -->
           <div class="pill-card-footer">
             <div class="footer-info-area">
               <div class="footer-info-title">
                 <span>Destino:</span>
                 <strong>Excel SharePoint & Local</strong>
               </div>
-              <p class="footer-info-sub">Disparo imediato com validação de dados via Webhook</p>
+              <p class="footer-info-sub">Sincronização automática com SharePoint e Base Local</p>
             </div>
             <div class="footer-actions-area">
               <button type="submit" class="pill-btn-submit" id="btn-submit">
@@ -251,7 +275,7 @@
         </div>
 
         <div class="tabela-container">
-          <table>
+          <table class="tabela-tramitacoes">
             <thead>
               <tr>
                 <th>Código</th>
