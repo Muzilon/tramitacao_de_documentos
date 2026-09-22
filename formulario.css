@@ -1,0 +1,122 @@
+/* Estilo geral da página */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f9;
+  color: #333333;
+  margin: 0;
+  padding: 30px 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  color: #2c3e50;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* Card do Formulário */
+#form-tramitacao {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+/* Agrupamento de cada rótulo e campo */
+#form-tramitacao div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Rótulos dos campos */
+label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+/* Caixas de digitação, seleções e área de texto */
+input, select, textarea {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Destaque ao focar no campo */
+input:focus, select:focus, textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* Botão de Envio */
+button {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #1d4ed8;
+}
+/* Seção da listagem */
+#secao-lista {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 40px;
+}
+
+#secao-lista h2 {
+  color: #2c3e50;
+  margin-bottom: 16px;
+}
+
+.tabela-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+}
+
+tr:hover {
+  background-color: #f1f5f9;
+}
