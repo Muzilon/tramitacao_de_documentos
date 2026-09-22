@@ -237,6 +237,7 @@
         <!-- Topo do Modal -->
         <div class="modal-header">
           <div class="modal-header-badges">
+            <span id="modal-id-badge" class="card-id-pill" title="ID do Item na Base de Dados">ID: -</span>
             <span id="modal-codigo" class="card-code">DOC-0001</span>
             <span id="modal-revisao" class="card-rev" style="background:#f1f5f9; padding:3px 8px; border-radius:4px; font-weight:600;">Rev. 0</span>
             <span id="modal-status-badge"></span>
@@ -261,95 +262,145 @@
             <span id="modal-tipo" class="card-type-tag">Tipo de Documento</span>
           </div>
 
-          <!-- Conteúdo dos Detalhes em Grid -->
-          <div class="modal-body-grid">
-            <div class="modal-info-item">
-              <span class="modal-info-label">Remetente / Responsável</span>
-              <div class="user-info" style="margin-top: 5px;">
-                <span id="modal-avatar" class="avatar-initial">?</span>
-                <strong id="modal-remetente" style="color: #0f172a; font-size: 13px;">-</strong>
-              </div>
-            </div>
-
-            <div class="modal-info-item">
-              <span class="modal-info-label">Área & Disciplina</span>
-              <strong id="modal-area-disciplina" class="modal-info-value">-</strong>
-            </div>
-
-            <div class="modal-info-item">
-              <span class="modal-info-label">Data de Recebimento</span>
-              <strong id="modal-data-recebimento" class="modal-info-value">-</strong>
-            </div>
-
-            <div class="modal-info-item">
-              <span class="modal-info-label">Data Limite de Revisão</span>
-              <strong id="modal-data-revisao" class="modal-info-value">-</strong>
-            </div>
-
-            <div class="modal-info-item modal-item-full">
-              <span class="modal-info-label">Observações da Tramitação</span>
-              <p id="modal-observacao" class="modal-obs-text">-</p>
-            </div>
-
-            <!-- Seção de Arquivos e Pastas -->
-            <div class="modal-info-item modal-item-full modal-anexos-box">
-              <span class="modal-info-label">Arquivos & Pastas Vinculadas</span>
-
-              <!-- Alerta quando NÃO houver arquivos nem links -->
-              <div id="modal-alerta-sem-anexos" class="alerta-sem-anexo" style="display: none;">
-                <div class="alerta-icone">⚠️</div>
-                <div class="alerta-texto">
-                  <strong>Nenhum arquivo anexado ou link disponível</strong>
-                  <p>Você pode colar o link direto da pasta abaixo ou selecionar arquivos para criar a pasta automaticamente no SharePoint.</p>
-                </div>
-              </div>
-
-              <!-- Resumo dos arquivos existentes -->
-              <div id="modal-files-summary" class="modal-files-summary">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <span>📄</span>
-                  <span id="modal-arquivo-principal" class="modal-file-name">Documento Principal: -</span>
-                </div>
-                <div id="modal-anexos-complementares-info" style="display:flex; align-items:center; gap:8px; margin-top: 6px;">
-                  <span>📁</span>
-                  <span id="modal-qtd-anexos" class="modal-file-name">Anexos Complementares: 0 arquivos</span>
-                </div>
-              </div>
-
-              <!-- Painel de Upload para anexar arquivos ao SharePoint -->
-              <div id="painel-upload-modal" class="painel-upload-modal" style="display: none;">
-                <div class="painel-upload-modal-titulo">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-                  </svg>
-                  <span>Anexar Arquivos ao SharePoint</span>
-                </div>
-                <div class="grid-upload-modal">
-                  <div class="campo-upload-item">
-                    <label>Documento Principal (PDF/DOC):</label>
-                    <label for="modal-input-file-principal" class="btn-upload-trigger">
-                      <span>Escolher Arquivo</span>
-                      <input type="file" id="modal-input-file-principal" style="display: none;" />
-                    </label>
-                    <span id="modal-preview-doc-principal" class="nome-arquivo-preview">Nenhum</span>
-                  </div>
-                  <div class="campo-upload-item">
-                    <label>Anexos Complementares:</label>
-                    <label for="modal-input-files-anexos" class="btn-upload-trigger">
-                      <span>Adicionar Anexos</span>
-                      <input type="file" id="modal-input-files-anexos" multiple style="display: none;" />
-                    </label>
-                    <span id="modal-preview-qtd-anexos" class="nome-arquivo-preview">0 arquivos</span>
+          <div class="modal-content-split">
+            <!-- Coluna Esquerda: Dados do Documento e Anexos -->
+            <div class="modal-left-pane">
+              <!-- Conteúdo dos Detalhes em Grid -->
+              <div class="modal-body-grid">
+                <div class="modal-info-item">
+                  <span class="modal-info-label">Remetente / Responsável</span>
+                  <div class="user-info" style="margin-top: 5px;">
+                    <span id="modal-avatar" class="avatar-initial">?</span>
+                    <strong id="modal-remetente" style="color: #0f172a; font-size: 13px;">-</strong>
                   </div>
                 </div>
-                <button type="button" id="btn-enviar-anexos-sharepoint" class="btn-salvar-anexos-sharepoint">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="16 16 12 12 8 16"></polyline>
-                    <line x1="12" y1="12" x2="12" y2="21"></line>
-                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+
+                <div class="modal-info-item">
+                  <span class="modal-info-label">Área & Disciplina</span>
+                  <strong id="modal-area-disciplina" class="modal-info-value">-</strong>
+                </div>
+
+                <div class="modal-info-item">
+                  <span class="modal-info-label">Data de Recebimento</span>
+                  <strong id="modal-data-recebimento" class="modal-info-value">-</strong>
+                </div>
+
+                <div class="modal-info-item">
+                  <span class="modal-info-label">Data Limite de Revisão</span>
+                  <strong id="modal-data-revisao" class="modal-info-value">-</strong>
+                </div>
+
+                <div class="modal-info-item modal-item-full">
+                  <span class="modal-info-label">Observações da Tramitação</span>
+                  <p id="modal-observacao" class="modal-obs-text">-</p>
+                </div>
+
+                <!-- Seção de Arquivos e Pastas -->
+                <div class="modal-info-item modal-item-full modal-anexos-box">
+                  <span class="modal-info-label">Arquivos & Pastas Vinculadas</span>
+
+                  <!-- Alerta quando NÃO houver arquivos nem links -->
+                  <div id="modal-alerta-sem-anexos" class="alerta-sem-anexo" style="display: none;">
+                    <div class="alerta-icone">⚠️</div>
+                    <div class="alerta-texto">
+                      <strong>Nenhum arquivo anexado ou link disponível</strong>
+                      <p>Você pode colar o link direto da pasta abaixo ou selecionar arquivos para criar a pasta automaticamente no SharePoint.</p>
+                    </div>
+                  </div>
+
+                  <!-- Resumo dos arquivos existentes -->
+                  <div id="modal-files-summary" class="modal-files-summary">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span>📄</span>
+                      <span id="modal-arquivo-principal" class="modal-file-name">Documento Principal: -</span>
+                    </div>
+                    <div id="modal-anexos-complementares-info" style="display:flex; align-items:center; gap:8px; margin-top: 6px;">
+                      <span>📁</span>
+                      <span id="modal-qtd-anexos" class="modal-file-name">Anexos Complementares: 0 arquivos</span>
+                    </div>
+                  </div>
+
+                  <!-- Painel de Upload para anexar arquivos ao SharePoint -->
+                  <div id="painel-upload-modal" class="painel-upload-modal" style="display: none;">
+                    <div class="painel-upload-modal-titulo">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                      </svg>
+                      <span>Anexar Arquivos ao SharePoint</span>
+                    </div>
+                    <div class="grid-upload-modal">
+                      <div class="campo-upload-item">
+                        <label>Documento Principal (PDF/DOC):</label>
+                        <label for="modal-input-file-principal" class="btn-upload-trigger">
+                          <span>Escolher Arquivo</span>
+                          <input type="file" id="modal-input-file-principal" style="display: none;" />
+                        </label>
+                        <span id="modal-preview-doc-principal" class="nome-arquivo-preview">Nenhum</span>
+                      </div>
+                      <div class="campo-upload-item">
+                        <label>Anexos Complementares:</label>
+                        <label for="modal-input-files-anexos" class="btn-upload-trigger">
+                          <span>Adicionar Anexos</span>
+                          <input type="file" id="modal-input-files-anexos" multiple style="display: none;" />
+                        </label>
+                        <span id="modal-preview-qtd-anexos" class="nome-arquivo-preview">0 arquivos</span>
+                      </div>
+                    </div>
+                    <button type="button" id="btn-enviar-anexos-sharepoint" class="btn-salvar-anexos-sharepoint">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 16 12 12 8 16"></polyline>
+                        <line x1="12" y1="12" x2="12" y2="21"></line>
+                        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+                      </svg>
+                      <span>Criar Pasta & Salvar Arquivos no SharePoint</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coluna Direita: Fluxo de Tramitação (Estilo Rio Vertical) -->
+            <div class="modal-right-pane">
+              <div class="timeline-river-header">
+                <div class="timeline-river-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                   </svg>
-                  <span>Criar Pasta & Salvar Arquivos no SharePoint</span>
-                </button>
+                  <span>Fluxo de Tramitação</span>
+                </div>
+                <span class="timeline-river-sub">Percurso em tempo real</span>
+              </div>
+
+              <!-- Lista de Etapas Estilo Rio -->
+              <div id="timeline-river-container" class="timeline-river-flow">
+                <!-- Nós do fluxo injetados dinamicamente via planner.js -->
+              </div>
+
+              <!-- Controle de Mudança de Etapa -->
+              <div class="timeline-stage-control">
+                <div class="stage-control-header">
+                  <span>Atualizar Etapa</span>
+                </div>
+                <div class="stage-control-form">
+                  <select id="select-nova-etapa" class="stage-select">
+                    <option value="">Selecione novo status...</option>
+                    <option value="Recebido">Recebido</option>
+                    <option value="Em revisão da qualidade">Em revisão da qualidade</option>
+                    <option value="Devolvido para correção">Devolvido para correção</option>
+                    <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
+                    <option value="Em revisão do solicitante">Em revisão do solicitante</option>
+                    <option value="Para aprovação qualidade">Para aprovação qualidade</option>
+                    <option value="Aprovado">Aprovado</option>
+                    <option value="Cancelado">Cancelado</option>
+                  </select>
+                  <input type="text" id="input-etapa-destino" class="stage-input-destino" placeholder="Destino / Pra onde vai (ex: Qualidade)" />
+                  <button type="button" id="btn-salvar-nova-etapa" class="btn-stage-submit">
+                    <span>Registrar Alteração</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -413,9 +464,15 @@
               </div>
 
               <div class="edit-modal-box">
-                <label for="edit-status">Status</label>
+                <label for="edit-status">Status da Tramitação</label>
                 <select id="edit-status" class="edit-modal-select">
-                  <option value="Em Revisão">Em Revisão</option>
+                  <option value="Recebido">Recebido</option>
+                  <option value="Em revisão da qualidade">Em revisão da qualidade</option>
+                  <option value="Devolvido para correção">Devolvido para correção</option>
+                  <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
+                  <option value="Em revisão do solicitante">Em revisão do solicitante</option>
+                  <option value="Para aprovação qualidade">Para aprovação qualidade</option>
+                  <option value="Em Revisão">Em Revisão (Geral)</option>
                   <option value="Pendente">Pendente</option>
                   <option value="Aprovado">Aprovado</option>
                   <option value="Cancelado">Cancelado</option>
