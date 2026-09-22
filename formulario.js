@@ -1,9 +1,25 @@
-(() => {
-  // 1. URL do fluxo do Power Automate (cola aqui o teu URL completo gerado no gatilho HTTP)
-  const URL_WEBHOOK_POWER_AUTOMATE = "https://defaultadd9956403f342bcb569ac9a4db4e9.f3.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/25/workflows/a2ea498f2b9040639632239654fabbd7/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kUvzix-PgeMqipfYBcMV10Y9SYbshheJkRAZ516j5ds";
+import {
+  obterTramitacoes,
+  salvarTramitacoes,
+  aoAtualizarDados,
+  inicializarBarraSincronizacao,
+  inicializarMenuConfiguracoes,
+  buscarDadosDoPowerAutomate,
+  URL_WEBHOOK_POST
+} from './data-service.js';
 
-  // 2. Recupera as tramitações existentes no LocalStorage ou inicia uma lista vazia
-  const tramitacoes = JSON.parse(localStorage.getItem('tramitacoes')) || [];
+(() => {
+  // 1. URL do fluxo do Power Automate (para envio)
+  const URL_WEBHOOK_POWER_AUTOMATE = URL_WEBHOOK_POST;
+
+  // 2. Recupera as tramitações existentes na base
+  let tramitacoes = obterTramitacoes();
+
+  // Escuta atualizações vindas da importação de Excel ou do Power Automate
+  aoAtualizarDados((novosDados) => {
+    tramitacoes = novosDados;
+    renderizarTabela();
+  });
 
   // 3. Elementos da interface
   const formulario = document.getElementById('form-tramitacao');
@@ -14,6 +30,9 @@
   // Função auxiliar para renderizar o badge de status
   function getStatusBadge(status) {
     const statusLimpo = (status || '').trim().toLowerCase();
+    if (statusLimpo === 'cancelado') {
+      return `<span class="badge badge-cancelado">${status}</span>`;
+    }
     if (statusLimpo === 'aprovado') {
       return `<span class="badge badge-aprovado">${status}</span>`;
     }
@@ -57,8 +76,8 @@
       const areaDisciplina = [item.area, item.disciplina].filter(Boolean).join(' • ') || '-';
 
       linha.innerHTML = `
-        <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 600; color: #0f172a;">${item.codigo || '-'}</code></td>
-        <td><strong style="color: #0f172a;">${item.titulo}</strong></td>
+        <td><span class="tabela-codigo">${item.codigo || '-'}</span></td>
+        <td><strong class="tabela-titulo-doc">${item.titulo || '-'}</strong></td>
         <td>${item.tipoDocumento || '-'}</td>
         <td style="text-align: center; font-weight: 500;">${item.revisao ?? '0'}</td>
         <td>${getStatusBadge(item.status)}</td>
@@ -289,9 +308,9 @@
         linkAnexo: linkAnexoDireto
       };
 
-      // Gravação local (Array + LocalStorage)
+      // Gravação na base oficial (Array + Cache Local)
       tramitacoes.push(novaTramitacao);
-      localStorage.setItem('tramitacoes', JSON.stringify(tramitacoes));
+      salvarTramitacoes(tramitacoes, 'Novo Registro Local');
 
       // Atualização imediata da tabela no ecrã
       renderizarTabela();
@@ -392,4 +411,12 @@
 
   // 9. Renderização inicial ao abrir a página
   renderizarTabela();
+  inicializarMenuConfiguracoes('header-settings-dropdown');
+
+  // 10. Tenta sincronizar automaticamente com a nuvem (se o webhook estiver configurado)
+  buscarDadosDoPowerAutomate().then((resultado) => {
+    if (resultado.sucesso) {
+      console.log(`DocFlow: sincronizado com o SharePoint (${resultado.total} itens).`);
+    }
+  });
 })();
