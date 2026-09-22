@@ -1,3 +1,5 @@
+export {}; // Faz o VS Code entender que este arquivo tem seu próprio escopo fechado
+
 // 1. Recupera as tramitações existentes no LocalStorage ou inicia uma lista vazia
 let tramitacoes = JSON.parse(localStorage.getItem('tramitacoes')) || [];
 
