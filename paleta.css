@@ -1,0 +1,137 @@
+/* ========================================================
+   Paleta de Cores Oficial - Sistema DocFlow
+   Arquivo Central de Tokens de Design
+   ======================================================== */
+
+:root {
+  /* ======================================================
+     1. Cores Primitivas (Paleta Oficial Fornecida)
+     ====================================================== */
+  --cor-vinho: #B85057;     /* Marsala / Terracota avermelhado */
+  --cor-verde: #668D58;     /* Sage Olive / Verde Folha Suave */
+  --cor-chumbo: #404040;    /* Grafite Escuro / Carvão Principal */
+  --cor-ambar: #FBBA6D;     /* Ocre Dourado / Âmbar Quente */
+  --cor-pessego: #F69463;   /* Terracota Pêssego / Primária dos Ícones */
+  --cor-coral: #F1655D;     /* Coral / Goiaba Vibrante */
+  --cor-cinza: #808184;     /* Cinza Médio / Ardósia Suave */
+
+  /* ======================================================
+     2. Variações Suaves (Fundos de Badges, Hover e Tags)
+     ====================================================== */
+  --cor-vinho-suave: rgba(184, 80, 87, 0.12);
+  --cor-verde-suave: rgba(102, 141, 88, 0.14);
+  --cor-chumbo-suave: rgba(64, 64, 64, 0.08);
+  --cor-ambar-suave: rgba(251, 186, 109, 0.20);
+  --cor-pessego-suave: rgba(246, 148, 99, 0.15);
+  --cor-coral-suave: rgba(241, 101, 93, 0.14);
+  --cor-cinza-suave: rgba(128, 129, 132, 0.12);
+
+  /* Tons de Fundo e Superfícies Neutras */
+  --cor-fundo: #fbfbfb;
+  --cor-cartao: #ffffff;
+  --cor-borda: #e8eaed;
+  --cor-borda-suave: #f1f3f4;
+  --cor-borda-foco: var(--cor-pessego);
+
+  /* ======================================================
+     3. Tokens Semânticos do Sistema (Uso Funcional)
+     ====================================================== */
+  --cor-primaria: var(--cor-pessego);
+  --cor-primaria-hover: #e57f4e;
+  --cor-primaria-suave: var(--cor-pessego-suave);
+
+  --cor-secundaria: var(--cor-cinza);
+  --cor-secundaria-hover: #6c6d70;
+
+  --cor-destaque: var(--cor-vinho);
+  --cor-destaque-suave: var(--cor-vinho-suave);
+
+  --cor-sucesso: var(--cor-verde);
+  --cor-sucesso-suave: var(--cor-verde-suave);
+
+  --cor-alerta: var(--cor-ambar);
+  --cor-alerta-suave: var(--cor-ambar-suave);
+
+  --cor-perigo: var(--cor-coral);
+  --cor-perigo-suave: var(--cor-coral-suave);
+
+  /* Tipografia */
+  --cor-texto-principal: var(--cor-chumbo);
+  --cor-texto-secundario: var(--cor-cinza);
+  --cor-texto-mutado: #9ba0a6;
+
+  /* Status de Tramitações */
+  --status-aprovado-cor: var(--cor-verde);
+  --status-aprovado-bg: var(--cor-verde-suave);
+
+  --status-revisao-cor: #c26535;
+  --status-revisao-bg: var(--cor-pessego-suave);
+
+  --status-pendente-cor: #a26914;
+  --status-pendente-bg: var(--cor-ambar-suave);
+
+  --status-cancelado-cor: var(--cor-coral);
+  --status-cancelado-bg: var(--cor-coral-suave);
+}
+
+/* ========================================================
+   4. Suporte Completo: Dark Mode (Tokens Globais)
+   ======================================================== */
+[data-theme="dark"] {
+  --cor-fundo: #111113;
+  --cor-cartao: #1c1c22;
+  --cor-borda: #2e2e38;
+  --cor-borda-suave: #25252d;
+
+  --cor-texto-principal: #f3f4f6;
+  --cor-texto-secundario: #a1a1aa;
+  --cor-texto-mutado: #71717a;
+
+  --cor-vinho-suave: rgba(184, 80, 87, 0.28);
+  --cor-verde-suave: rgba(102, 141, 88, 0.28);
+  --cor-chumbo-suave: rgba(255, 255, 255, 0.08);
+  --cor-ambar-suave: rgba(251, 186, 109, 0.28);
+  --cor-pessego-suave: rgba(246, 148, 99, 0.28);
+  --cor-coral-suave: rgba(241, 101, 93, 0.28);
+  --cor-cinza-suave: rgba(128, 129, 132, 0.28);
+}
+
+/* ========================================================
+   5. Classes Utilitárias Rápidas (Para Citar Cores Direto no HTML)
+   ======================================================== */
+
+/* Cores de Texto */
+.cor-vinho     { color: var(--cor-vinho) !important; }
+.cor-verde     { color: var(--cor-verde) !important; }
+.cor-chumbo    { color: var(--cor-chumbo) !important; }
+.cor-ambar     { color: var(--cor-ambar) !important; }
+.cor-pessego   { color: var(--cor-pessego) !important; }
+.cor-coral     { color: var(--cor-coral) !important; }
+.cor-cinza     { color: var(--cor-cinza) !important; }
+
+/* Cores de Fundo Sólidas */
+.bg-vinho      { background-color: var(--cor-vinho) !important; color: #ffffff !important; }
+.bg-verde      { background-color: var(--cor-verde) !important; color: #ffffff !important; }
+.bg-chumbo     { background-color: var(--cor-chumbo) !important; color: #ffffff !important; }
+.bg-ambar      { background-color: var(--cor-ambar) !important; color: var(--cor-chumbo) !important; }
+.bg-pessego    { background-color: var(--cor-pessego) !important; color: #ffffff !important; }
+.bg-coral      { background-color: var(--cor-coral) !important; color: #ffffff !important; }
+.bg-cinza      { background-color: var(--cor-cinza) !important; color: #ffffff !important; }
+
+/* Cores de Fundo Suaves (Badges e Realces) */
+.bg-vinho-suave   { background-color: var(--cor-vinho-suave) !important; color: var(--cor-vinho) !important; }
+.bg-verde-suave   { background-color: var(--cor-verde-suave) !important; color: var(--cor-verde) !important; }
+.bg-ambar-suave   { background-color: var(--cor-ambar-suave) !important; color: var(--status-pendente-cor) !important; }
+.bg-pessego-suave { background-color: var(--cor-pessego-suave) !important; color: var(--status-revisao-cor) !important; }
+.bg-coral-suave   { background-color: var(--cor-coral-suave) !important; color: var(--cor-coral) !important; }
+.bg-cinza-suave   { background-color: var(--cor-cinza-suave) !important; color: var(--cor-cinza) !important; }
+
+/* Cores de Bordas */
+.borda-vinho    { border-color: var(--cor-vinho) !important; }
+.borda-verde    { border-color: var(--cor-verde) !important; }
+.borda-chumbo   { border-color: var(--cor-chumbo) !important; }
+.borda-ambar    { border-color: var(--cor-ambar) !important; }
+.borda-pessego  { border-color: var(--cor-pessego) !important; }
+.borda-coral    { border-color: var(--cor-coral) !important; }
+.borda-cinza    { border-color: var(--cor-cinza) !important; }
+
