@@ -7,7 +7,11 @@ import {
   buscarDadosDoPowerAutomate,
   URL_WEBHOOK_UPDATE_STATUS,
   arquivoParaBase64,
-  enviarArquivosParaSharePoint
+  enviarArquivosParaSharePoint,
+  obterHistoricoDocumento,
+  adicionarHistoricoAlteracao,
+  inicializarHistoricoSeNecessario,
+  gerarIdDocumento
 } from './data-service.js';
 
 (() => {
@@ -154,11 +158,31 @@ import {
   const modalObservacao = document.getElementById('modal-observacao');
   const modalArquivoPrincipal = document.getElementById('modal-arquivo-principal');
   const modalQtdAnexos = document.getElementById('modal-qtd-anexos');
-  const modalLinkSharepoint = document.getElementById('modal-link-sharepoint');
   const modalQuickActions = document.getElementById('modal-quick-actions');
+  const modalIdBadge = document.getElementById('modal-id-badge');
+  const timelineRiverContainer = document.getElementById('timeline-river-container');
+  const selectNovaEtapa = document.getElementById('select-nova-etapa');
+  const inputEtapaDestino = document.getElementById('input-etapa-destino');
+  const btnSalvarNovaEtapa = document.getElementById('btn-salvar-nova-etapa');
 
   let itemDetalheAtualIndex = null;
   let itemDetalheAtualChave = null;
+
+  function formatarDataHora(isoOuStr) {
+    if (!isoOuStr) return '-';
+    try {
+      const d = new Date(isoOuStr);
+      if (isNaN(d.getTime())) return isoOuStr;
+      const dia = String(d.getDate()).padStart(2, '0');
+      const mes = String(d.getMonth() + 1).padStart(2, '0');
+      const ano = d.getFullYear();
+      const hora = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return `${dia}/${mes}/${ano} ${hora}:${min}`;
+    } catch (_) {
+      return isoOuStr;
+    }
+  }
 
   function obterItemAtual() {
     if (itemDetalheAtualChave) {
@@ -383,10 +407,13 @@ import {
       const item = obterItemAtual();
       if (!item) return;
 
+      const statusAnterior = item.status || 'Recebido';
+      const novoStatus = document.getElementById('edit-status').value;
+
       item.titulo = document.getElementById('edit-titulo').value.trim();
       item.codigo = document.getElementById('edit-codigo').value.trim();
       item.tipoDocumento = document.getElementById('edit-tipo').value;
-      item.status = document.getElementById('edit-status').value;
+      item.status = novoStatus;
       item.revisao = document.getElementById('edit-revisao').value;
       item.remetente = document.getElementById('edit-remetente').value.trim();
       item.area = document.getElementById('edit-area').value.trim();
@@ -394,6 +421,18 @@ import {
       item.dataRecebimento = document.getElementById('edit-data-recebimento').value;
       item.dataRevisao = document.getElementById('edit-data-revisao').value;
       item.observacao = document.getElementById('edit-observacao').value.trim();
+
+      if (statusAnterior !== novoStatus) {
+        adicionarHistoricoAlteracao({
+          idDocumento: item.id || gerarIdDocumento(item, itemDetalheAtualIndex),
+          codigo: item.codigo,
+          status: novoStatus,
+          statusAnterior: statusAnterior,
+          destino: item.area ? `${item.area} / Qualidade` : 'Qualidade',
+          responsavel: item.remetente || 'Usuário Atual',
+          observacao: 'Atualização manual via edição de dados.'
+        });
+      }
 
       itemDetalheAtualChave = (item.codigo || '').trim().toLowerCase() || (item.titulo || '').trim().toLowerCase();
 
@@ -745,16 +784,188 @@ import {
       modalQuickActions.innerHTML = btns;
     }
 
+    // Renderiza a Linha do Tempo Estilo Rio Vertical
+    renderizarRiverTimeline(item, indexOriginal);
+
     modalDetalhes.style.display = 'flex';
   };
+
+  /**
+   * Renderiza a Linha do Tempo no estilo Rio (vertical) no painel lateral de detalhes
+   */
+  function renderizarRiverTimeline(item, indexOriginal) {
+    if (!timelineRiverContainer) return;
+
+    const idDoc = item.id || gerarIdDocumento(item, indexOriginal);
+    if (modalIdBadge) {
+      modalIdBadge.textContent = idDoc;
+      modalIdBadge.title = `ID da Tramitação: ${idDoc}`;
+    }
+
+    inicializarHistoricoSeNecessario(item);
+    const historico = obterHistoricoDocumento(idDoc || item.codigo);
+
+    if (historico.length === 0) {
+      timelineRiverContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-secondary); font-size: 13px;">Nenhuma alteração registrada ainda.</div>';
+      return;
+    }
+
+    const totalEventos = historico.length;
+    const statusAtualNorm = (item.status || historico[totalEventos - 1].status || '').toLowerCase().trim();
+    const isParaAprovacaoQualidade = statusAtualNorm.includes('para aprovacao qualidade') || statusAtualNorm.includes('para aprovação qualidade');
+
+    let html = '<div class="river-timeline-track">';
+
+    historico.forEach((evento, i) => {
+      const isAtual = (i === totalEventos - 1);
+      const dataFormatada = evento.dataExibicao || formatarDataHora(evento.dataHora) || '-';
+      const temProximo = (i < totalEventos - 1);
+
+      html += `
+        <div class="river-step ${isAtual ? 'step-current' : 'step-past'}">
+          <div class="river-axis-col">
+            <div class="river-dot ${isAtual ? 'dot-current' : 'dot-past'}" title="${isAtual ? 'Etapa Atual: ' + evento.status : 'Etapa Concluída: ' + evento.status}">
+              ${isAtual ? '<span class="pulse-ring"></span><span class="dot-core"></span>' : '<span class="dot-check">✓</span>'}
+            </div>
+            ${temProximo ? '<div class="river-line line-orange"></div>' : ''}
+            ${(!temProximo && isParaAprovacaoQualidade) ? '<div class="river-line line-subsequent"></div>' : ''}
+          </div>
+          <div class="river-body-col">
+            <div class="river-header-row">
+              <span class="river-status-badge ${isAtual ? 'status-badge-current' : 'status-badge-past'}">${evento.status}</span>
+              <span class="river-date-label">${dataFormatada}</span>
+            </div>
+            <div class="river-flow-info">
+              ${evento.destino ? `<span class="river-dest-pill" title="Pra onde vai">➔ ${evento.destino}</span>` : ''}
+              ${evento.responsavel ? `<span class="river-resp-pill" title="Responsável">👤 ${evento.responsavel}</span>` : ''}
+            </div>
+            ${(evento.observacao && evento.observacao !== 'Registro inicial do documento.') ? `<p class="river-obs-note">${evento.observacao}</p>` : ''}
+          </div>
+        </div>
+      `;
+    });
+
+    // Se estiver com status atual de "Para aprovação qualidade", exibe o status "Aprovação" como subsequente
+    if (isParaAprovacaoQualidade) {
+      html += `
+        <div class="river-step step-subsequent">
+          <div class="river-axis-col">
+            <div class="river-dot dot-subsequent" title="Próxima etapa subsequente: Aprovação">
+              <span class="dot-subsequent-circle"></span>
+            </div>
+          </div>
+          <div class="river-body-col">
+            <div class="river-header-row">
+              <span class="river-status-badge status-badge-subsequent">Aprovação</span>
+              <span class="river-subsequent-tag">Subsequente</span>
+            </div>
+            <div class="river-flow-info">
+              <span class="river-dest-pill chip-gray">➔ Conclusão / Arquivo Geral</span>
+            </div>
+            <span class="river-subsequent-desc">Habilitado após validação da coordenação de qualidade</span>
+          </div>
+        </div>
+      `;
+    }
+
+    html += '</div>';
+    timelineRiverContainer.innerHTML = html;
+
+    // Configura o seletor de nova etapa e auto-preenchimento do destino
+    if (selectNovaEtapa) {
+      selectNovaEtapa.value = '';
+      selectNovaEtapa.onchange = () => {
+        const val = selectNovaEtapa.value;
+        if (!inputEtapaDestino) return;
+        if (val === 'Recebido') inputEtapaDestino.value = 'Qualidade';
+        else if (val === 'Em revisão da qualidade') inputEtapaDestino.value = 'Equipe de Qualidade';
+        else if (val === 'Devolvido para correção') inputEtapaDestino.value = `Área Solicitante (${item.area || 'Solicitante'})`;
+        else if (val === 'Para aprovação da área solicitante') inputEtapaDestino.value = `Gestor da Área (${item.area || 'Engenharia'})`;
+        else if (val === 'Em revisão do solicitante') inputEtapaDestino.value = `Solicitante (${item.remetente || 'Polyana'})`;
+        else if (val === 'Para aprovação qualidade') inputEtapaDestino.value = 'Coordenação da Qualidade';
+        else if (val === 'Aprovado') inputEtapaDestino.value = 'Arquivo Geral / Concluído';
+        else if (val === 'Cancelado') inputEtapaDestino.value = 'Processo Arquivado';
+      };
+    }
+
+    // Configura botão de registro de nova etapa
+    if (btnSalvarNovaEtapa) {
+      btnSalvarNovaEtapa.onclick = () => {
+        const novoStatus = selectNovaEtapa ? selectNovaEtapa.value : '';
+        if (!novoStatus) {
+          alert('Por favor, selecione a nova etapa desejada.');
+          return;
+        }
+
+        const destino = (inputEtapaDestino ? inputEtapaDestino.value : '').trim() || 'Qualidade';
+        const statusAnterior = item.status || 'Recebido';
+
+        // 1. Registra no histórico
+        adicionarHistoricoAlteracao({
+          idDocumento: idDoc,
+          codigo: item.codigo,
+          status: novoStatus,
+          statusAnterior: statusAnterior,
+          destino: destino,
+          responsavel: item.remetente || 'Usuário Atual'
+        });
+
+        // 2. Atualiza item
+        item.status = novoStatus;
+        salvarTramitacoes(tramitacoes, 'Atualização de Etapa');
+        sincronizarComPowerAutomate(item);
+
+        // 3. Atualiza interface e Kanban
+        renderizarQuadro();
+        renderizarRiverTimeline(item, indexOriginal);
+
+        // Atualiza badge de status no topo do modal
+        if (modalStatusBadge) {
+          let bClass = 'badge-default';
+          const sLower = novoStatus.toLowerCase();
+          if (sLower === 'cancelado') bClass = 'badge-cancelado';
+          else if (sLower === 'aprovado') bClass = 'badge-aprovado';
+          else if (sLower.includes('revis') || sLower.includes('qualidade')) bClass = 'badge-revisao';
+          else if (sLower === 'pendente' || sLower.includes('solicitante') || sLower.includes('correcao')) bClass = 'badge-pendente';
+          modalStatusBadge.innerHTML = `<span class="badge ${bClass}">${novoStatus}</span>`;
+        }
+
+        btnSalvarNovaEtapa.innerHTML = '<span>✓ Registrado!</span>';
+        setTimeout(() => {
+          btnSalvarNovaEtapa.innerHTML = `
+            <span>Registrar Alteração</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          `;
+        }, 1500);
+      };
+    }
+  }
 
   // Função para mover de status
   window.moverStatus = function(indexNoArrayOriginal, novoStatus) {
     if (tramitacoes[indexNoArrayOriginal]) {
-      tramitacoes[indexNoArrayOriginal].status = novoStatus;
+      const item = tramitacoes[indexNoArrayOriginal];
+      const statusAnt = item.status;
+      item.status = novoStatus;
+
+      adicionarHistoricoAlteracao({
+        idDocumento: item.id || gerarIdDocumento(item, indexNoArrayOriginal),
+        codigo: item.codigo,
+        status: novoStatus,
+        statusAnterior: statusAnt,
+        destino: novoStatus === 'Aprovado' ? 'Arquivo Geral / Concluído' : 'Qualidade',
+        responsavel: item.remetente || 'Usuário Atual'
+      });
+
       salvarTramitacoes(tramitacoes, 'Atualização de Status');
-      sincronizarComPowerAutomate(tramitacoes[indexNoArrayOriginal]);
+      sincronizarComPowerAutomate(item);
       renderizarQuadro();
+
+      if (modalDetalhes && modalDetalhes.style.display === 'flex' && itemDetalheAtualIndex === indexNoArrayOriginal) {
+        renderizarRiverTimeline(item, indexNoArrayOriginal);
+      }
     }
   };
 
@@ -912,12 +1123,12 @@ import {
       const s = (item.status || '').toLowerCase().trim();
       if (s === 'cancelado') {
         colCanceladosItens.push(item);
-      } else if (s === 'aprovado') {
+      } else if (s === 'aprovado' || s === 'aprovação final') {
         colAprovadoItens.push(item);
-      } else if (s === 'pendente') {
+      } else if (s === 'pendente' || s.includes('devolvido') || s.includes('aprovação da área') || s.includes('aprovacao da area')) {
         colPendenteItens.push(item);
       } else {
-        colRevisaoItens.push(item); // Padrão: Em Revisão
+        colRevisaoItens.push(item); // Padrão: Em Revisão (Recebido, Em revisão da qualidade, Em revisão do solicitante, Para aprovação qualidade)
       }
     });
 
