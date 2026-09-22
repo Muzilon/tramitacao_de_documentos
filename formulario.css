@@ -1430,7 +1430,7 @@ tbody tr:hover {
   background-color: #ffffff;
   border-radius: 28px;
   width: 100%;
-  max-width: 620px;
+  max-width: 980px;
   box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.3);
   overflow: hidden;
   display: flex;
@@ -1459,6 +1459,20 @@ tbody tr:hover {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.card-id-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  background-color: rgba(246, 148, 99, 0.12);
+  color: #c25e2e;
+  border: 1px solid rgba(246, 148, 99, 0.3);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .modal-title-area {
@@ -1473,6 +1487,359 @@ tbody tr:hover {
   margin: 0 0 8px 0;
   line-height: 1.35;
   letter-spacing: -0.01em;
+}
+
+/* Layout Split do Modal (Dados à Esquerda, Fluxo Rio à Direita) */
+.modal-content-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.95fr);
+  gap: 20px;
+  padding: 18px 28px 20px 28px;
+  max-height: 64vh;
+  overflow-y: auto;
+}
+
+.modal-left-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-left-pane .modal-body-grid {
+  padding: 0;
+  max-height: none;
+  overflow-y: visible;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.modal-right-pane {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.timeline-river-header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.timeline-river-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+}
+
+.timeline-river-title svg {
+  color: var(--cor-pessego, #F69463);
+}
+
+.timeline-river-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+  display: block;
+}
+
+.timeline-river-flow {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 290px;
+  padding-right: 6px;
+  margin-bottom: 14px;
+}
+
+/* ========================================================
+   Linha do Tempo Estilo Rio Vertical
+   ======================================================== */
+.river-timeline-track {
+  display: flex;
+  flex-direction: column;
+}
+
+.river-step {
+  display: flex;
+  gap: 12px;
+  position: relative;
+}
+
+.river-axis-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.river-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+/* Status anteriores: tom de laranja da paleta */
+.river-dot.dot-past {
+  background-color: var(--cor-pessego, #F69463);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(246, 148, 99, 0.35);
+}
+
+.dot-check {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* Status atual: tom de vermelho da paleta (piscando igual SharePoint) */
+.river-dot.dot-current {
+  background-color: var(--cor-coral, #F1655D);
+  box-shadow: 0 0 10px rgba(241, 101, 93, 0.45);
+}
+
+.dot-core {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+.pulse-ring {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--cor-coral, #F1655D);
+  animation: sharepointPulse 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes sharepointPulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.95;
+  }
+  60% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+
+/* Status subsequente (Aprovação) */
+.river-dot.dot-subsequent {
+  border: 2px dashed #94a3b8;
+  background-color: transparent;
+}
+
+.dot-subsequent-circle {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #94a3b8;
+}
+
+/* Linha vertical do rio */
+.river-line {
+  width: 2.5px;
+  flex: 1;
+  min-height: 22px;
+  margin: 3px 0;
+}
+
+/* Trecho percorrido pintado em laranja claro da paleta */
+.river-line.line-orange {
+  background-color: #fbd2bd;
+  background: linear-gradient(to bottom, var(--cor-pessego, #F69463), #fbd2bd);
+}
+
+.river-line.line-subsequent {
+  border-left: 2px dashed var(--cor-cinza, #808184);
+  width: 0;
+}
+
+/* Conteúdo da etapa */
+.river-body-col {
+  flex: 1;
+  padding-bottom: 14px;
+}
+
+.river-header-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.river-status-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+}
+
+.river-status-badge.status-badge-current {
+  color: var(--cor-coral, #F1655D);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.river-status-badge.status-badge-subsequent {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.river-date-label {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.river-flow-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}
+
+.river-dest-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  background-color: rgba(246, 148, 99, 0.12);
+  color: #c25e2e;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.river-dest-pill.chip-gray {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.river-resp-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  background-color: #f1f5f9;
+  color: #475569;
+  border-radius: 9999px;
+  font-size: 10.5px;
+}
+
+.river-obs-note {
+  font-size: 11px;
+  color: #64748b;
+  margin: 3px 0 0 0;
+  font-style: italic;
+}
+
+.river-subsequent-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.river-subsequent-desc {
+  font-size: 10px;
+  color: #94a3b8;
+  display: block;
+  margin-top: 3px;
+}
+
+/* Painel de Controle de Etapa */
+.timeline-stage-control {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.stage-control-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.stage-control-form {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.stage-select, .stage-input-destino {
+  width: 100%;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #0f172a;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.stage-select:focus, .stage-input-destino:focus {
+  border-color: var(--cor-pessego, #F69463);
+  box-shadow: 0 0 0 2px rgba(246, 148, 99, 0.18);
+}
+
+.btn-stage-submit {
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, var(--cor-pessego, #F69463) 0%, var(--cor-primaria-hover, #e57f4e) 100%);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(246, 148, 99, 0.25);
+  transition: all 0.15s ease;
+}
+
+.btn-stage-submit:hover {
+  background: linear-gradient(135deg, var(--cor-primaria-hover, #e57f4e) 0%, #cf6f3f 100%);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 860px) {
+  .modal-content-split {
+    grid-template-columns: 1fr;
+  }
 }
 
 .modal-body-grid {
@@ -3118,4 +3485,94 @@ tbody tr:hover {
 
 [data-theme="dark"] .custom-dialog-btn.cancelar:hover {
   background-color: #31313e;
+}
+
+/* ========================================================
+   Linha do Tempo Estilo Rio & ID do Item em Dark Mode
+   ======================================================== */
+[data-theme="dark"] .card-id-pill {
+  background-color: rgba(246, 148, 99, 0.16);
+  border-color: rgba(246, 148, 99, 0.4);
+  color: #fca583;
+}
+
+[data-theme="dark"] .modal-right-pane {
+  background-color: #16161c;
+  border-color: #2b2b36;
+}
+
+[data-theme="dark"] .timeline-river-header {
+  border-bottom-color: #282834;
+}
+
+[data-theme="dark"] .timeline-river-title {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .timeline-river-sub {
+  color: #71717a;
+}
+
+[data-theme="dark"] .river-status-badge {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .river-status-badge.status-badge-current {
+  color: var(--cor-coral, #F1655D);
+}
+
+[data-theme="dark"] .river-dest-pill {
+  background-color: rgba(246, 148, 99, 0.18);
+  color: #fca583;
+}
+
+[data-theme="dark"] .river-dest-pill.chip-gray {
+  background-color: #24242e;
+  color: #a1a1aa;
+}
+
+[data-theme="dark"] .river-resp-pill {
+  background-color: #24242e;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .river-obs-note {
+  color: #a1a1aa;
+}
+
+[data-theme="dark"] .river-line.line-orange {
+  background: linear-gradient(to bottom, var(--cor-pessego, #F69463), rgba(246, 148, 99, 0.3));
+}
+
+[data-theme="dark"] .river-line.line-subsequent {
+  border-left-color: #3f3f46;
+}
+
+[data-theme="dark"] .river-subsequent-tag {
+  background: #24242e;
+  color: #a1a1aa;
+}
+
+[data-theme="dark"] .river-subsequent-desc {
+  color: #71717a;
+}
+
+[data-theme="dark"] .timeline-stage-control {
+  border-top-color: #282834;
+}
+
+[data-theme="dark"] .stage-control-header {
+  color: #a1a1aa;
+}
+
+[data-theme="dark"] .stage-select,
+[data-theme="dark"] .stage-input-destino {
+  background-color: #1f1f26;
+  border-color: #353544;
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .stage-select option {
+  background-color: #1c1c22;
+  color: #f3f4f6;
 }
