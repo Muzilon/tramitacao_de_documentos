@@ -1,4 +1,9 @@
 import {
+  protegerPagina,
+  configurarHeaderUsuario,
+  obterUsuarioAtual
+} from './auth-service.js';
+import {
   obterTramitacoes,
   salvarTramitacoes,
   aoAtualizarDados,
@@ -13,6 +18,8 @@ import {
   inicializarHistoricoSeNecessario,
   gerarIdDocumento
 } from './data-service.js';
+
+protegerPagina();
 
 (() => {
   // 1. Webhook opcional dedicado para atualizar status no Excel (não insere linha)
@@ -162,8 +169,20 @@ import {
   const modalIdBadge = document.getElementById('modal-id-badge');
   const timelineRiverContainer = document.getElementById('timeline-river-container');
   const selectNovaEtapa = document.getElementById('select-nova-etapa');
+  const inputEtapaObservacao = document.getElementById('input-etapa-observacao');
+  const containerDefinirResponsavel = document.getElementById('container-definir-responsavel');
   const inputEtapaDestino = document.getElementById('input-etapa-destino');
   const btnSalvarNovaEtapa = document.getElementById('btn-salvar-nova-etapa');
+
+  // Elementos do Modal de Auditoria e Histórico Completo
+  const btnVerAuditoriaModal = document.getElementById('btn-ver-auditoria');
+  const modalAuditoria = document.getElementById('modal-auditoria');
+  const btnFecharAuditoria = document.getElementById('btn-fechar-auditoria');
+  const btnFecharAuditoriaFooter = document.getElementById('btn-fechar-auditoria-footer');
+  const modalAuditoriaCodigo = document.getElementById('modal-auditoria-codigo');
+  const modalAuditoriaRevisao = document.getElementById('modal-auditoria-revisao');
+  const modalAuditoriaTitulo = document.getElementById('modal-auditoria-titulo');
+  const auditoriaTimelineContainer = document.getElementById('auditoria-timeline-container');
 
   let itemDetalheAtualIndex = null;
   let itemDetalheAtualChave = null;
@@ -409,28 +428,61 @@ import {
 
       const statusAnterior = item.status || 'Recebido';
       const novoStatus = document.getElementById('edit-status').value;
+      const novoTitulo = document.getElementById('edit-titulo').value.trim();
+      const novoCodigo = document.getElementById('edit-codigo').value.trim();
+      const novoTipo = document.getElementById('edit-tipo').value;
+      const novoRevisao = document.getElementById('edit-revisao').value;
+      const novoRemetente = document.getElementById('edit-remetente').value.trim();
+      const novoArea = document.getElementById('edit-area').value.trim();
+      const novoDisciplina = document.getElementById('edit-disciplina').value.trim();
+      const novoDataRecebimento = document.getElementById('edit-data-recebimento').value;
+      const novoDataRevisao = document.getElementById('edit-data-revisao').value;
+      const novoObservacao = document.getElementById('edit-observacao').value.trim();
 
-      item.titulo = document.getElementById('edit-titulo').value.trim();
-      item.codigo = document.getElementById('edit-codigo').value.trim();
-      item.tipoDocumento = document.getElementById('edit-tipo').value;
+      const diffs = [];
+      if ((item.titulo || '') !== novoTitulo) diffs.push({ campo: 'Título', antes: item.titulo || '', depois: novoTitulo });
+      if ((item.codigo || '') !== novoCodigo) diffs.push({ campo: 'Código', antes: item.codigo || '', depois: novoCodigo });
+      if ((item.tipoDocumento || '') !== novoTipo) diffs.push({ campo: 'Tipo', antes: item.tipoDocumento || '', depois: novoTipo });
+      if ((item.status || '') !== novoStatus) diffs.push({ campo: 'Status', antes: statusAnterior, depois: novoStatus });
+      if ((item.revisao ?? '') != novoRevisao) diffs.push({ campo: 'Revisão', antes: String(item.revisao ?? '0'), depois: String(novoRevisao) });
+      if ((item.remetente || '') !== novoRemetente) diffs.push({ campo: 'Remetente', antes: item.remetente || '', depois: novoRemetente });
+      if ((item.area || '') !== novoArea) diffs.push({ campo: 'Área', antes: item.area || '', depois: novoArea });
+      if ((item.disciplina || '') !== novoDisciplina) diffs.push({ campo: 'Disciplina', antes: item.disciplina || '', depois: novoDisciplina });
+      if ((item.dataRecebimento || '') !== novoDataRecebimento) diffs.push({ campo: 'Data Recebimento', antes: item.dataRecebimento || '', depois: novoDataRecebimento });
+      if ((item.dataRevisao || '') !== novoDataRevisao) diffs.push({ campo: 'Data Revisão', antes: item.dataRevisao || '', depois: novoDataRevisao });
+      if ((item.observacao || '') !== novoObservacao) diffs.push({ campo: 'Observações', antes: item.observacao || '', depois: novoObservacao });
+
+      item.titulo = novoTitulo;
+      item.codigo = novoCodigo;
+      item.tipoDocumento = novoTipo;
       item.status = novoStatus;
-      item.revisao = document.getElementById('edit-revisao').value;
-      item.remetente = document.getElementById('edit-remetente').value.trim();
-      item.area = document.getElementById('edit-area').value.trim();
-      item.disciplina = document.getElementById('edit-disciplina').value.trim();
-      item.dataRecebimento = document.getElementById('edit-data-recebimento').value;
-      item.dataRevisao = document.getElementById('edit-data-revisao').value;
-      item.observacao = document.getElementById('edit-observacao').value.trim();
+      item.revisao = novoRevisao;
+      item.remetente = novoRemetente;
+      item.area = novoArea;
+      item.disciplina = novoDisciplina;
+      item.dataRecebimento = novoDataRecebimento;
+      item.dataRevisao = novoDataRevisao;
+      item.observacao = novoObservacao;
 
-      if (statusAnterior !== novoStatus) {
+      const autorAcao = (typeof window !== 'undefined' && window.AuthService && typeof window.AuthService.obterUsuarioLogado === 'function')
+        ? (window.AuthService.obterUsuarioLogado()?.nome || item.remetente || 'Usuário Atual')
+        : (obterUsuarioAtual()?.nome || item.remetente || 'Usuário Atual');
+
+      if (diffs.length > 0) {
         adicionarHistoricoAlteracao({
           idDocumento: item.id || gerarIdDocumento(item, itemDetalheAtualIndex),
           codigo: item.codigo,
           status: novoStatus,
           statusAnterior: statusAnterior,
           destino: item.area ? `${item.area} / Qualidade` : 'Qualidade',
-          responsavel: item.remetente || 'Usuário Atual',
-          observacao: 'Atualização manual via edição de dados.'
+          responsavel: autorAcao,
+          autor: autorAcao,
+          tipoAcao: statusAnterior !== novoStatus ? 'STATUS' : 'EDICAO',
+          detalhes: diffs,
+          observacao: statusAnterior !== novoStatus 
+            ? `Status alterado para "${novoStatus}". Campos editados: ${diffs.map(d => d.campo).join(', ')}.`
+            : `Edição de dados do documento (${diffs.map(d => d.campo).join(', ')}).`,
+          enviarNuvem: true
         });
       }
 
@@ -627,6 +679,7 @@ import {
 
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+      if (modalAuditoria && modalAuditoria.style.display === 'flex') fecharModalAuditoria();
       if (modalDetalhes && modalDetalhes.style.display === 'flex') fecharModal();
       if (modalCancelados && modalCancelados.style.display === 'flex') fecharModalCancelados();
     }
@@ -651,9 +704,10 @@ import {
     let badgeClass = 'badge-default';
     const s = (item.status || '').toLowerCase().trim();
     if (s === 'cancelado') badgeClass = 'badge-cancelado';
-    else if (s === 'aprovado') badgeClass = 'badge-aprovado';
-    else if (s.includes('revis')) badgeClass = 'badge-revisao';
-    else if (s === 'pendente') badgeClass = 'badge-pendente';
+    else if (s === 'aprovado' || s === 'aprovação final') badgeClass = 'badge-aprovado';
+    else if (s.includes('revisão junto à área') || s.includes('revisao junto a area')) badgeClass = 'badge-revisao-area';
+    else if (s.includes('revis') || s.includes('qualidade')) badgeClass = 'badge-revisao';
+    else if (s === 'pendente' || s.includes('devolvido') || s.includes('solicitante')) badgeClass = 'badge-pendente';
 
     if (modalStatusBadge) {
       modalStatusBadge.innerHTML = `<span class="badge ${badgeClass}">${item.status || 'Em Revisão'}</span>`;
@@ -791,6 +845,22 @@ import {
   };
 
   /**
+   * Alterna expansão de detalhes de um evento na Linha do Tempo Estilo Rio
+   */
+  window.alternarDetalhesEventoTimeline = function(eventoId) {
+    const el = document.getElementById(`detalhes-${eventoId}`);
+    const hint = document.getElementById(`hint-${eventoId}`);
+    if (!el) return;
+    if (el.style.display === 'none' || !el.style.display) {
+      el.style.display = 'block';
+      if (hint) hint.textContent = '▴ Ocultar';
+    } else {
+      el.style.display = 'none';
+      if (hint) hint.textContent = '▾ Detalhes';
+    }
+  };
+
+  /**
    * Renderiza a Linha do Tempo no estilo Rio (vertical) no painel lateral de detalhes
    */
   function renderizarRiverTimeline(item, indexOriginal) {
@@ -803,88 +873,151 @@ import {
     }
 
     inicializarHistoricoSeNecessario(item);
-    const historico = obterHistoricoDocumento(idDoc || item.codigo);
+    const historicoRaw = obterHistoricoDocumento(idDoc || item.codigo);
 
-    if (historico.length === 0) {
+    if (historicoRaw.length === 0) {
       timelineRiverContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-secondary); font-size: 13px;">Nenhuma alteração registrada ainda.</div>';
       return;
     }
 
+    // Ordena do mais recente para o mais antigo (recente primeiro)
+    const historico = [...historicoRaw].sort((a, b) => new Date(b.dataHora || 0) - new Date(a.dataHora || 0));
+
     const totalEventos = historico.length;
-    const statusAtualNorm = (item.status || historico[totalEventos - 1].status || '').toLowerCase().trim();
+    const statusAtualNorm = (item.status || historico[0].status || '').toLowerCase().trim();
     const isParaAprovacaoQualidade = statusAtualNorm.includes('para aprovacao qualidade') || statusAtualNorm.includes('para aprovação qualidade');
 
     let html = '<div class="river-timeline-track">';
 
+    // Se estiver com status atual de "Para aprovação qualidade", exibe o status "Aprovação" como próximo passo acima no topo
+    if (isParaAprovacaoQualidade) {
+      html += `
+        <div class="river-step step-subsequent">
+          <div class="river-axis-col">
+            <div class="river-dot dot-subsequent" title="Próxima etapa: Aprovação">
+              <span class="dot-subsequent-circle"></span>
+            </div>
+            <div class="river-line line-subsequent"></div>
+          </div>
+          <div class="river-body-col">
+            <div class="river-step-card" style="opacity: 0.85; border-style: dashed;">
+              <div class="river-header-row">
+                <span class="river-status-badge status-badge-subsequent">Aprovação</span>
+                <span class="river-subsequent-tag">Próxima Etapa</span>
+              </div>
+              <span class="river-subsequent-desc">Habilitado após validação da coordenação de qualidade</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     historico.forEach((evento, i) => {
-      const isAtual = (i === totalEventos - 1);
+      const isAtual = (i === 0);
       const dataFormatada = evento.dataExibicao || formatarDataHora(evento.dataHora) || '-';
-      const temProximo = (i < totalEventos - 1);
+      const temProximoAbaixo = (i < totalEventos - 1);
+      const eventoId = evento.id || `hist-evt-${i}`;
+      const autorExibicao = evento.autor || evento.responsavel || 'Usuário Atual';
 
       html += `
         <div class="river-step ${isAtual ? 'step-current' : 'step-past'}">
           <div class="river-axis-col">
-            <div class="river-dot ${isAtual ? 'dot-current' : 'dot-past'}" title="${isAtual ? 'Etapa Atual: ' + evento.status : 'Etapa Concluída: ' + evento.status}">
+            <div class="river-dot ${isAtual ? 'dot-current' : 'dot-past'}" title="${isAtual ? 'Etapa Atual: ' + evento.status : 'Etapa Anterior: ' + evento.status}">
               ${isAtual ? '<span class="pulse-ring"></span><span class="dot-core"></span>' : '<span class="dot-check">✓</span>'}
             </div>
-            ${temProximo ? '<div class="river-line line-orange"></div>' : ''}
-            ${(!temProximo && isParaAprovacaoQualidade) ? '<div class="river-line line-subsequent"></div>' : ''}
+            ${temProximoAbaixo ? '<div class="river-line line-orange"></div>' : ''}
           </div>
           <div class="river-body-col">
-            <div class="river-header-row">
-              <span class="river-status-badge ${isAtual ? 'status-badge-current' : 'status-badge-past'}">${evento.status}</span>
-              <span class="river-date-label">${dataFormatada}</span>
+            <div class="river-step-card" onclick="window.alternarDetalhesEventoTimeline('${eventoId}')" title="Clique para ver os detalhes desta alteração">
+              <div class="river-header-row">
+                <span class="river-status-badge ${isAtual ? 'status-badge-current' : 'status-badge-past'}">${evento.status}</span>
+                <span class="river-date-label">${dataFormatada}</span>
+              </div>
+              <div class="river-author-row">
+                <span class="river-author-tag">👤 ${autorExibicao}</span>
+                <span class="river-expand-hint" id="hint-${eventoId}">▾ Detalhes</span>
+              </div>
+              <div class="river-expanded-details" id="detalhes-${eventoId}" style="display: none;">
+                <div class="river-details-box">
+                  <div class="river-detail-row">
+                    <strong>Realizado por:</strong>
+                    <span>${autorExibicao}</span>
+                  </div>
+                  ${evento.statusAnterior ? `
+                    <div class="river-detail-row">
+                      <strong>Status anterior:</strong>
+                      <span>${evento.statusAnterior}</span>
+                    </div>
+                  ` : ''}
+                  ${evento.responsavel && evento.responsavel !== autorExibicao ? `
+                    <div class="river-detail-row">
+                      <strong>Responsável atribuído:</strong>
+                      <span>${evento.responsavel}</span>
+                    </div>
+                  ` : ''}
+                  ${evento.destino && evento.destino !== 'Qualidade' ? `
+                    <div class="river-detail-row">
+                      <strong>Destino / Encaminhamento:</strong>
+                      <span>${evento.destino}</span>
+                    </div>
+                  ` : ''}
+                  ${evento.observacao ? `
+                    <div class="river-detail-row obs">
+                      <strong>Observação:</strong>
+                      <p>${evento.observacao}</p>
+                    </div>
+                  ` : '<div class="river-detail-row" style="color: #94a3b8; font-style: italic;">Sem observações registradas.</div>'}
+                </div>
+              </div>
             </div>
-            <div class="river-flow-info">
-              ${evento.destino ? `<span class="river-dest-pill" title="Pra onde vai">➔ ${evento.destino}</span>` : ''}
-              ${evento.responsavel ? `<span class="river-resp-pill" title="Responsável">👤 ${evento.responsavel}</span>` : ''}
-            </div>
-            ${(evento.observacao && evento.observacao !== 'Registro inicial do documento.') ? `<p class="river-obs-note">${evento.observacao}</p>` : ''}
           </div>
         </div>
       `;
     });
 
-    // Se estiver com status atual de "Para aprovação qualidade", exibe o status "Aprovação" como subsequente
-    if (isParaAprovacaoQualidade) {
-      html += `
-        <div class="river-step step-subsequent">
-          <div class="river-axis-col">
-            <div class="river-dot dot-subsequent" title="Próxima etapa subsequente: Aprovação">
-              <span class="dot-subsequent-circle"></span>
-            </div>
-          </div>
-          <div class="river-body-col">
-            <div class="river-header-row">
-              <span class="river-status-badge status-badge-subsequent">Aprovação</span>
-              <span class="river-subsequent-tag">Subsequente</span>
-            </div>
-            <div class="river-flow-info">
-              <span class="river-dest-pill chip-gray">➔ Conclusão / Arquivo Geral</span>
-            </div>
-            <span class="river-subsequent-desc">Habilitado após validação da coordenação de qualidade</span>
-          </div>
-        </div>
-      `;
-    }
-
     html += '</div>';
     timelineRiverContainer.innerHTML = html;
 
-    // Configura o seletor de nova etapa e auto-preenchimento do destino
+    // Função auxiliar para verificar se o status requer definição de próximo responsável
+    function statusRequerResponsavel(st) {
+      if (!st) return false;
+      const s = st.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      return s.includes('devolvido') || 
+             (s.includes('aprovacao') && (s.includes('area') || s.includes('qualidade')));
+    }
+
+    // Configura o seletor de nova etapa e controle de campos
     if (selectNovaEtapa) {
       selectNovaEtapa.value = '';
+      if (inputEtapaObservacao) inputEtapaObservacao.value = '';
+      if (inputEtapaDestino) inputEtapaDestino.value = '';
+      if (containerDefinirResponsavel) containerDefinirResponsavel.style.display = 'none';
+
       selectNovaEtapa.onchange = () => {
         const val = selectNovaEtapa.value;
-        if (!inputEtapaDestino) return;
-        if (val === 'Recebido') inputEtapaDestino.value = 'Qualidade';
-        else if (val === 'Em revisão da qualidade') inputEtapaDestino.value = 'Equipe de Qualidade';
-        else if (val === 'Devolvido para correção') inputEtapaDestino.value = `Área Solicitante (${item.area || 'Solicitante'})`;
-        else if (val === 'Para aprovação da área solicitante') inputEtapaDestino.value = `Gestor da Área (${item.area || 'Engenharia'})`;
-        else if (val === 'Em revisão do solicitante') inputEtapaDestino.value = `Solicitante (${item.remetente || 'Polyana'})`;
-        else if (val === 'Para aprovação qualidade') inputEtapaDestino.value = 'Coordenação da Qualidade';
-        else if (val === 'Aprovado') inputEtapaDestino.value = 'Arquivo Geral / Concluído';
-        else if (val === 'Cancelado') inputEtapaDestino.value = 'Processo Arquivado';
+        const requer = statusRequerResponsavel(val);
+
+        if (containerDefinirResponsavel) {
+          containerDefinirResponsavel.style.display = requer ? 'flex' : 'none';
+        }
+
+        if (inputEtapaDestino) {
+          if (!requer) {
+            inputEtapaDestino.value = '';
+          } else {
+            const valNorm = val.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (valNorm.includes('devolvido')) {
+              inputEtapaDestino.placeholder = `Área Solicitante (${item.area || 'Solicitante'})`;
+              if (!inputEtapaDestino.value) inputEtapaDestino.value = `Área Solicitante (${item.area || 'Solicitante'})`;
+            } else if (valNorm.includes('area')) {
+              inputEtapaDestino.placeholder = `Gestor da Área (${item.area || 'Engenharia'})`;
+              if (!inputEtapaDestino.value) inputEtapaDestino.value = `Gestor da Área (${item.area || 'Engenharia'})`;
+            } else if (valNorm.includes('qualidade')) {
+              inputEtapaDestino.placeholder = 'Coordenação da Qualidade';
+              if (!inputEtapaDestino.value) inputEtapaDestino.value = 'Coordenação da Qualidade';
+            }
+          }
+        }
       };
     }
 
@@ -897,7 +1030,20 @@ import {
           return;
         }
 
-        const destino = (inputEtapaDestino ? inputEtapaDestino.value : '').trim() || 'Qualidade';
+        const requerResp = statusRequerResponsavel(novoStatus);
+        const responsavelDefinido = (inputEtapaDestino ? inputEtapaDestino.value : '').trim();
+
+        if (requerResp && !responsavelDefinido) {
+          alert('Por favor, preencha o campo "Definir responsável" para esta etapa.');
+          if (inputEtapaDestino) inputEtapaDestino.focus();
+          return;
+        }
+
+        const observacaoTexto = (inputEtapaObservacao ? inputEtapaObservacao.value : '').trim();
+        const usuarioLogado = (typeof window !== 'undefined' && window.AuthService && typeof window.AuthService.obterUsuarioLogado === 'function')
+          ? (window.AuthService.obterUsuarioLogado()?.nome || item.remetente || 'Usuário Atual')
+          : (obterUsuarioAtual()?.nome || item.remetente || 'Usuário Atual');
+
         const statusAnterior = item.status || 'Recebido';
 
         // 1. Registra no histórico
@@ -906,8 +1052,12 @@ import {
           codigo: item.codigo,
           status: novoStatus,
           statusAnterior: statusAnterior,
-          destino: destino,
-          responsavel: item.remetente || 'Usuário Atual'
+          destino: responsavelDefinido || 'Qualidade',
+          responsavel: responsavelDefinido || usuarioLogado,
+          autor: usuarioLogado,
+          tipoAcao: 'STATUS',
+          observacao: observacaoTexto || `Etapa alterada de "${statusAnterior}" para "${novoStatus}".`,
+          enviarNuvem: true
         });
 
         // 2. Atualiza item
@@ -915,7 +1065,13 @@ import {
         salvarTramitacoes(tramitacoes, 'Atualização de Etapa');
         sincronizarComPowerAutomate(item);
 
-        // 3. Atualiza interface e Kanban
+        // 3. Limpa formulário de controle de etapa
+        if (selectNovaEtapa) selectNovaEtapa.value = '';
+        if (inputEtapaObservacao) inputEtapaObservacao.value = '';
+        if (inputEtapaDestino) inputEtapaDestino.value = '';
+        if (containerDefinirResponsavel) containerDefinirResponsavel.style.display = 'none';
+
+        // 4. Atualiza interface e Kanban
         renderizarQuadro();
         renderizarRiverTimeline(item, indexOriginal);
 
@@ -924,9 +1080,10 @@ import {
           let bClass = 'badge-default';
           const sLower = novoStatus.toLowerCase();
           if (sLower === 'cancelado') bClass = 'badge-cancelado';
-          else if (sLower === 'aprovado') bClass = 'badge-aprovado';
+          else if (sLower === 'aprovado' || sLower === 'aprovação final') bClass = 'badge-aprovado';
+          else if (sLower.includes('revisão junto à área') || sLower.includes('revisao junto a area')) bClass = 'badge-revisao-area';
           else if (sLower.includes('revis') || sLower.includes('qualidade')) bClass = 'badge-revisao';
-          else if (sLower === 'pendente' || sLower.includes('solicitante') || sLower.includes('correcao')) bClass = 'badge-pendente';
+          else if (sLower === 'pendente' || sLower.includes('solicitante') || sLower.includes('correcao') || sLower.includes('devolvido')) bClass = 'badge-pendente';
           modalStatusBadge.innerHTML = `<span class="badge ${bClass}">${novoStatus}</span>`;
         }
 
@@ -950,13 +1107,23 @@ import {
       const statusAnt = item.status;
       item.status = novoStatus;
 
+      const usuarioLogado = (typeof window !== 'undefined' && window.AuthService && typeof window.AuthService.obterUsuarioLogado === 'function')
+        ? (window.AuthService.obterUsuarioLogado()?.nome || item.remetente || 'Usuário Atual')
+        : (obterUsuarioAtual()?.nome || item.remetente || 'Usuário Atual');
+
+      const isCancelado = novoStatus.toLowerCase() === 'cancelado';
+
       adicionarHistoricoAlteracao({
         idDocumento: item.id || gerarIdDocumento(item, indexNoArrayOriginal),
         codigo: item.codigo,
         status: novoStatus,
         statusAnterior: statusAnt,
         destino: novoStatus === 'Aprovado' ? 'Arquivo Geral / Concluído' : 'Qualidade',
-        responsavel: item.remetente || 'Usuário Atual'
+        responsavel: usuarioLogado,
+        autor: usuarioLogado,
+        tipoAcao: isCancelado ? 'CANCELAMENTO' : 'STATUS',
+        observacao: isCancelado ? 'Documento cancelado pelo usuário.' : `Status alterado de "${statusAnt}" para "${novoStatus}".`,
+        enviarNuvem: true
       });
 
       salvarTramitacoes(tramitacoes, 'Atualização de Status');
@@ -1047,6 +1214,13 @@ import {
             </svg>
             <span>Detalhes</span>
           </button>
+          <button class="btn-card-action btn-card-auditoria" onclick="event.stopPropagation(); window.abrirModalAuditoria(${indexOriginal});" title="Ver histórico de alterações">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Histórico</span>
+          </button>
         </div>
       </div>
     `;
@@ -1090,6 +1264,13 @@ import {
               <path d="m13.6 16.6 2.6 2.6"></path>
             </svg>
             <span>Detalhes</span>
+          </button>
+          <button class="btn-card-action btn-card-auditoria" onclick="event.stopPropagation(); window.abrirModalAuditoria(${indexOriginal});" title="Ver histórico de alterações">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Histórico</span>
           </button>
         </div>
       </div>
@@ -1174,6 +1355,124 @@ import {
     }
   }
 
+  // ========================================================
+  // Modal de Histórico Completo de Alterações (Auditoria Detalhada)
+  // ========================================================
+  function fecharModalAuditoria() {
+    if (modalAuditoria) modalAuditoria.style.display = 'none';
+  }
+  window.fecharModalAuditoria = fecharModalAuditoria;
+
+  window.abrirModalAuditoria = function(indexOriginal) {
+    const item = tramitacoes[indexOriginal];
+    if (!item || !modalAuditoria) return;
+
+    const idDoc = item.id || gerarIdDocumento(item, indexOriginal);
+    if (modalAuditoriaCodigo) modalAuditoriaCodigo.textContent = item.codigo || 'S/ CÓDIGO';
+    if (modalAuditoriaRevisao) modalAuditoriaRevisao.textContent = `Rev. ${item.revisao ?? '0'}`;
+    if (modalAuditoriaTitulo) modalAuditoriaTitulo.textContent = item.titulo || 'Documento sem título';
+
+    inicializarHistoricoSeNecessario(item);
+    const historico = obterHistoricoDocumento(idDoc || item.codigo);
+
+    // Exibe eventos dos mais recentes para os mais antigos (recente primeiro)
+    const eventosOrdenados = [...historico].sort((a, b) => new Date(b.dataHora || 0) - new Date(a.dataHora || 0));
+
+    if (!auditoriaTimelineContainer) return;
+
+    if (eventosOrdenados.length === 0) {
+      auditoriaTimelineContainer.innerHTML = '<div class="auditoria-vazia">Nenhum evento registrado no histórico deste documento.</div>';
+    } else {
+      auditoriaTimelineContainer.innerHTML = eventosOrdenados.map((ev) => {
+        const tipo = (ev.tipoAcao || 'STATUS').toUpperCase();
+        let tipoClass = 'tipo-status';
+        let tipoLabel = 'Mudança de Status';
+
+        if (tipo === 'CRIACAO') {
+          tipoClass = 'tipo-criacao';
+          tipoLabel = 'Cadastro Inicial';
+        } else if (tipo === 'EDICAO') {
+          tipoClass = 'tipo-edicao';
+          tipoLabel = 'Edição de Dados';
+        } else if (tipo === 'ANEXO') {
+          tipoClass = 'tipo-anexo';
+          tipoLabel = 'Arquivos / SharePoint';
+        } else if (tipo === 'CANCELAMENTO') {
+          tipoClass = 'tipo-cancelamento';
+          tipoLabel = 'Cancelamento';
+        }
+
+        const dataExib = ev.dataExibicao || formatarDataHora(ev.dataHora) || '-';
+        const autor = ev.autor || ev.responsavel || 'Usuário Atual';
+
+        // Renderiza lista de diffs se houver
+        let diffHtml = '';
+        if (ev.detalhes && Array.isArray(ev.detalhes) && ev.detalhes.length > 0) {
+          diffHtml = `
+            <ul class="auditoria-diff-list">
+              ${ev.detalhes.map(d => `
+                <li class="auditoria-diff-item">
+                  <strong>${d.campo}:</strong> "${d.antes || 'vazio'}" ➔ "${d.depois || 'vazio'}"
+                </li>
+              `).join('')}
+            </ul>
+          `;
+        }
+
+        return `
+          <div class="auditoria-item-card">
+            <div class="auditoria-item-top">
+              <div class="auditoria-item-meta">
+                <span class="auditoria-tipo-pill ${tipoClass}">${tipoLabel}</span>
+                <span class="auditoria-item-autor">👤 ${autor}</span>
+              </div>
+              <span class="auditoria-item-data">🕒 ${dataExib}</span>
+            </div>
+
+            <div class="auditoria-item-detalhe">
+              ${ev.status ? `<strong>Status:</strong> <span style="font-weight:600;">${ev.status}</span>` : ''}
+              ${ev.statusAnterior ? ` <span style="color:#94a3b8; font-size:11px;">(anterior: ${ev.statusAnterior})</span>` : ''}
+              ${ev.responsavel && ev.responsavel !== autor ? ` • <strong>Responsável:</strong> ${ev.responsavel}` : ''}
+              ${ev.destino && ev.destino !== 'Qualidade' ? ` • <strong>Destino:</strong> ${ev.destino}` : ''}
+            </div>
+
+            ${diffHtml}
+
+            ${ev.observacao ? `
+              <div class="auditoria-obs-box">
+                "${ev.observacao}"
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    modalAuditoria.style.display = 'flex';
+  };
+
+  if (btnFecharAuditoria) {
+    btnFecharAuditoria.addEventListener('click', fecharModalAuditoria);
+  }
+
+  if (btnFecharAuditoriaFooter) {
+    btnFecharAuditoriaFooter.addEventListener('click', fecharModalAuditoria);
+  }
+
+  if (btnVerAuditoriaModal) {
+    btnVerAuditoriaModal.addEventListener('click', () => {
+      if (itemDetalheAtualIndex !== null) {
+        window.abrirModalAuditoria(itemDetalheAtualIndex);
+      }
+    });
+  }
+
+  if (modalAuditoria) {
+    modalAuditoria.addEventListener('click', (e) => {
+      if (e.target === modalAuditoria) fecharModalAuditoria();
+    });
+  }
+
   // Ouvintes de eventos
   if (inputBusca) {
     inputBusca.addEventListener('input', renderizarQuadro);
@@ -1186,6 +1485,7 @@ import {
   // Inicialização
   popularFiltroAreas();
   renderizarQuadro();
+  configurarHeaderUsuario('header-user-badge');
   inicializarMenuConfiguracoes('header-settings-dropdown');
 
   // Sincronização em segundo plano com o SharePoint se o webhook estiver ativo

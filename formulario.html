@@ -77,6 +77,9 @@
             <span>SharePoint</span>
           </div>
 
+          <!-- Perfil do Usuário Logado -->
+          <div class="user-profile-badge" id="header-user-badge"></div>
+
           <!-- Menu de Engrenagens (Configurações, Tema & Sincronização) -->
           <div class="header-settings-wrapper" id="header-settings-wrapper">
             <button type="button" class="header-settings-btn" id="btn-settings-toggle" aria-label="Configurações e Sincronização" title="Configurações & Sincronização">
@@ -144,7 +147,15 @@
             <div class="pill-input-box">
               <label for="status" class="pill-label">Status da Tramitação</label>
               <select id="status" name="status" class="pill-select">
-                <option value="Em Revisão">Em Revisão</option>
+                <option value="Recebido">Recebido</option>
+                <option value="Em revisão da qualidade">Em revisão da qualidade</option>
+                <option value="Em revisão junto à área">Em revisão junto à área</option>
+                <option value="Devolvido para área para revisão">Devolvido para área para revisão</option>
+                <option value="Devolvido para correção">Devolvido para correção</option>
+                <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
+                <option value="Em revisão do solicitante">Em revisão do solicitante</option>
+                <option value="Para aprovação qualidade">Para aprovação qualidade</option>
+                <option value="Em Revisão">Em Revisão (Geral)</option>
                 <option value="Pendente">Pendente</option>
                 <option value="Aprovado">Aprovado</option>
                 <option value="Cancelado">Cancelado</option>

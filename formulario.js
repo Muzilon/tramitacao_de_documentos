@@ -1,12 +1,20 @@
 import {
+  protegerPagina,
+  configurarHeaderUsuario,
+  obterUsuarioAtual
+} from './auth-service.js';
+import {
   obterTramitacoes,
   salvarTramitacoes,
   aoAtualizarDados,
   inicializarBarraSincronizacao,
   inicializarMenuConfiguracoes,
   buscarDadosDoPowerAutomate,
-  URL_WEBHOOK_POST
+  URL_WEBHOOK_POST,
+  adicionarHistoricoAlteracao
 } from './data-service.js';
+
+protegerPagina();
 
 (() => {
   // 1. URL do fluxo do Power Automate (para envio)
@@ -312,6 +320,20 @@ import {
       tramitacoes.push(novaTramitacao);
       salvarTramitacoes(tramitacoes, 'Novo Registro Local');
 
+      // Registra evento inicial no histórico de alterações (persiste e envia ao Power Automate)
+      adicionarHistoricoAlteracao({
+        idDocumento: novaTramitacao.codigo ? `DOC-${novaTramitacao.codigo}` : '',
+        codigo: novaTramitacao.codigo,
+        status: novaTramitacao.status || 'Recebido',
+        statusAnterior: '',
+        destino: novaTramitacao.area ? `${novaTramitacao.area} / Qualidade` : 'Equipe de Qualidade',
+        responsavel: novaTramitacao.remetente || 'Cadastro Inicial',
+        autor: novaTramitacao.remetente || 'Cadastro Inicial',
+        tipoAcao: 'CRIACAO',
+        observacao: novaTramitacao.observacao || 'Registro inicial do documento cadastrado no formulário.',
+        enviarNuvem: true
+      });
+
       // Atualização imediata da tabela no ecrã
       renderizarTabela();
 
@@ -333,6 +355,7 @@ import {
       listaAnexosArquivos = [];
       renderizarListaAnexos();
       if (previewDocPrincipal) previewDocPrincipal.textContent = 'Nenhum selecionado';
+      aplicarDadosUsuarioLogado();
     });
   }
 
@@ -409,9 +432,25 @@ import {
     });
   }
 
+  // Função auxiliar para pré-preencher remetente e área do usuário logado
+  function aplicarDadosUsuarioLogado() {
+    const usuario = obterUsuarioAtual();
+    if (!usuario) return;
+    const inputRemetente = document.getElementById('remetente');
+    const inputArea = document.getElementById('area');
+    if (inputRemetente && usuario.nome) {
+      inputRemetente.value = usuario.nome;
+    }
+    if (inputArea && usuario.area) {
+      inputArea.value = usuario.area;
+    }
+  }
+
   // 9. Renderização inicial ao abrir a página
   renderizarTabela();
+  configurarHeaderUsuario('header-user-badge');
   inicializarMenuConfiguracoes('header-settings-dropdown');
+  aplicarDadosUsuarioLogado();
 
   // 10. Tenta sincronizar automaticamente com a nuvem (se o webhook estiver configurado)
   buscarDadosDoPowerAutomate().then((resultado) => {

@@ -75,6 +75,9 @@
             <span>SharePoint</span>
           </div>
 
+          <!-- Perfil do Usuário Logado -->
+          <div class="user-profile-badge" id="header-user-badge"></div>
+
           <!-- Menu de Engrenagens (Configurações, Tema & Sincronização) -->
           <div class="header-settings-wrapper" id="header-settings-wrapper">
             <button type="button" class="header-settings-btn" id="btn-settings-toggle" aria-label="Configurações e Sincronização" title="Configurações & Sincronização">
@@ -243,12 +246,18 @@
 
     <script type="module">
       import {
+        protegerPagina,
+        configurarHeaderUsuario
+      } from './auth-service.js';
+      import {
         obterTramitacoes,
         aoAtualizarDados,
         inicializarBarraSincronizacao,
         inicializarMenuConfiguracoes,
         buscarDadosDoPowerAutomate
       } from './data-service.js';
+
+      protegerPagina();
 
       (() => {
         let tramitacoes = obterTramitacoes();
@@ -376,6 +385,7 @@
 
         // Inicialização
         renderizarDashboard();
+        configurarHeaderUsuario('header-user-badge');
         inicializarMenuConfiguracoes('header-settings-dropdown');
 
         // Sincronização em segundo plano se configurada

@@ -4,6 +4,14 @@
  * Fonte Oficial: Planilha Excel (via Power Automate ou importação direta de arquivo .xlsx).
  */
 
+import {
+  normalizarItemUsuario,
+  salvarUsuarios,
+  obterUsuarios,
+  obterUsuarioAtual,
+  fazerLogout
+} from './auth-service.js';
+
 // 1. URLs do Power Automate
 // URL para envio (POST) de novos registros no formulário (Gera nova linha + pastas no SharePoint)
 export const URL_WEBHOOK_POST = "https://defaultadd9956403f342bcb569ac9a4db4e9.f3.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/25/workflows/a2ea498f2b9040639632239654fabbd7/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kUvzix-PgeMqipfYBcMV10Y9SYbshheJkRAZ516j5ds";
@@ -13,6 +21,9 @@ export const URL_WEBHOOK_GET = "https://defaultadd9956403f342bcb569ac9a4db4e9.f3
 
 // URL dedicada para ATUALIZAR STATUS (UpdateRowV2 no Power Automate) - Não usar o webhook de POST de cadastro!
 export const URL_WEBHOOK_UPDATE_STATUS = "";
+
+// URL dedicada para INSERIR HISTÓRICO DE ALTERAÇÕES no Excel (Add a row into a table na aba Historico)
+export const URL_WEBHOOK_ADD_HISTORICO = "https://defaultadd9956403f342bcb569ac9a4db4e9.f3.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/14/workflows/5b486bddbd954aabbb746425c02d92a8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MKK1fXEsHh4j9968blH5vPFT1MVF8FT6e13cI0RTTZ0";
 
 const CHAVE_STORAGE = 'tramitacoes';
 const CHAVE_ULTIMA_SINC = 'docflow_ultima_sincronizacao';
@@ -32,7 +43,18 @@ export function gerarIdDocumento(item, index = 0) {
   if (item && item.codigo && String(item.codigo).trim() !== '') {
     return `DOC-${String(item.codigo).trim()}`;
   }
-  return `DOC-${Date.now().toString(36).toUpperCase()}-${index + 1}`;
+  if (item && item.titulo && String(item.titulo).trim() !== '') {
+    const slug = String(item.titulo)
+      .trim()
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^A-Z0-9]/g, "_")
+      .replace(/_+/g, "_")
+      .substring(0, 25);
+    return `DOC-${slug}`;
+  }
+  return `DOC-ITEM-${index + 1}`;
 }
 
 /**
@@ -68,13 +90,23 @@ export function salvarTodoHistorico(lista) {
 export function obterHistoricoDocumento(idOuCodigo) {
   if (!idOuCodigo) return [];
   const chave = String(idOuCodigo).trim().toLowerCase();
+  const chaveSemPrefixo = chave.replace(/^doc-/, '');
   const todoHistorico = obterTodoHistorico();
 
   return todoHistorico.filter(h => {
     const hId = (h.idDocumento || '').trim().toLowerCase();
     const hCod = (h.codigo || '').trim().toLowerCase();
     const hPrim = (h.id || '').trim().toLowerCase();
-    return hId === chave || hCod === chave || hPrim === chave;
+
+    const hIdSemPrefixo = hId.replace(/^doc-/, '');
+    const hCodSemPrefixo = hCod.replace(/^doc-/, '');
+
+    return (
+      hId === chave || 
+      hCod === chave || 
+      hPrim === chave ||
+      (chaveSemPrefixo && (hIdSemPrefixo === chaveSemPrefixo || hCodSemPrefixo === chaveSemPrefixo))
+    );
   }).sort((a, b) => new Date(a.dataHora || 0) - new Date(b.dataHora || 0));
 }
 
@@ -89,7 +121,11 @@ export function adicionarHistoricoAlteracao({
   destino = '',
   responsavel = '',
   observacao = '',
-  dataHora = null
+  dataHora = null,
+  autor = '',
+  tipoAcao = 'STATUS',
+  detalhes = null,
+  enviarNuvem = false
 }) {
   const agora = dataHora ? new Date(dataHora) : new Date();
   const dataIso = agora.toISOString();
@@ -102,6 +138,12 @@ export function adicionarHistoricoAlteracao({
   const min = String(agora.getMinutes()).padStart(2, '0');
   const dataFormatada = `${dia}/${mes}/${ano} ${hora}:${min}`;
 
+  const usuarioSessao = (typeof window !== 'undefined' && window.AuthService && typeof window.AuthService.obterUsuarioLogado === 'function')
+    ? window.AuthService.obterUsuarioLogado()?.nome
+    : null;
+
+  const autorFinal = autor || responsavel || usuarioSessao || 'Usuário Atual';
+
   const novoRegistro = {
     id: `HIST-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
     idDocumento: idDocumento || (codigo ? `DOC-${codigo}` : `DOC-${Date.now()}`),
@@ -111,13 +153,25 @@ export function adicionarHistoricoAlteracao({
     dataHora: dataIso,
     dataExibicao: dataFormatada,
     destino: destino || 'Qualidade',
-    responsavel: responsavel || 'Usuário Atual',
+    responsavel: responsavel || autorFinal,
+    autor: autorFinal,
+    tipoAcao: tipoAcao || 'STATUS',
+    detalhes: detalhes || null,
     observacao: observacao || ''
   };
 
   const todoHistorico = obterTodoHistorico();
   todoHistorico.push(novoRegistro);
   salvarTodoHistorico(todoHistorico);
+
+  // Se houver webhook dedicado para gravar linha de histórico no Excel pelo Power Automate, envia em segundo plano APENAS quando solicitado explicitamente por ação do usuário
+  if (enviarNuvem && URL_WEBHOOK_ADD_HISTORICO && URL_WEBHOOK_ADD_HISTORICO.trim() !== '') {
+    fetch(URL_WEBHOOK_ADD_HISTORICO, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(novoRegistro)
+    }).catch(err => console.warn("DocFlow: Erro ao enviar histórico para o Power Automate:", err));
+  }
 
   return novoRegistro;
 }
@@ -127,7 +181,7 @@ export function adicionarHistoricoAlteracao({
  */
 export function inicializarHistoricoSeNecessario(item) {
   if (!item) return;
-  const idDoc = item.id || (item.codigo ? `DOC-${item.codigo}` : '');
+  const idDoc = item.id || (item.codigo ? `DOC-${item.codigo}` : gerarIdDocumento(item));
   const hist = obterHistoricoDocumento(idDoc || item.codigo);
 
   if (hist.length === 0) {
@@ -138,8 +192,11 @@ export function inicializarHistoricoSeNecessario(item) {
       statusAnterior: '',
       destino: item.area ? `${item.area} / Qualidade` : 'Equipe de Qualidade',
       responsavel: item.remetente || 'Cadastro Inicial',
-      observacao: item.observacao || 'Registro inicial do documento.',
-      dataHora: item.dataRecebimento ? `${item.dataRecebimento}T09:00:00.000Z` : null
+      autor: item.remetente || 'Cadastro Inicial',
+      tipoAcao: 'CRIACAO',
+      observacao: item.observacao || 'Registro inicial do documento cadastrado no sistema.',
+      dataHora: item.dataRecebimento ? `${item.dataRecebimento}T09:00:00.000Z` : null,
+      enviarNuvem: false
     });
   }
 }
@@ -192,9 +249,6 @@ export function desduplicarTramitacoes(lista) {
   });
 
   const consolidados = Array.from(mapa.values());
-  // Inicializa o histórico para novos itens se necessário
-  consolidados.forEach(item => inicializarHistoricoSeNecessario(item));
-
   return consolidados;
 }
 
@@ -399,8 +453,22 @@ export function normalizarItemHistorico(linha) {
   const status = getCampo('Status', 'Situação', 'status');
   const statusAnterior = getCampo('Status Anterior', 'StatusAnterior', 'status_anterior');
   const dataHora = getCampo('Data/Hora', 'Data Hora', 'dataHora', 'Data', 'Data de Alteração');
+  const dataExibicao = getCampo('dataExibicao', 'Data de Exibição', 'Data Exibicao', 'Data Formatada');
   const destino = getCampo('Destino', 'destino', 'Pra onde vai', 'Para onde vai');
-  const responsavel = getCampo('Responsável', 'Responsavel', 'responsavel', 'Autor');
+  const responsavel = getCampo('Responsável', 'Responsavel', 'responsavel');
+  const autor = getCampo('Autor', 'Quem Realizou', 'Modificado Por', 'Usuario', 'Usuário') || responsavel;
+  const tipoAcao = getCampo('Tipo de Ação', 'Tipo Acao', 'Tipo', 'Ação', 'Acao') || 'STATUS';
+  const detalhesRaw = getCampo('Detalhes', 'Diff', 'Alteracoes', 'Alterações');
+  let detalhes = null;
+  if (detalhesRaw) {
+    try {
+      detalhes = typeof detalhesRaw === 'string' && (detalhesRaw.startsWith('{') || detalhesRaw.startsWith('['))
+        ? JSON.parse(detalhesRaw)
+        : detalhesRaw;
+    } catch (_) {
+      detalhes = detalhesRaw;
+    }
+  }
   const observacao = getCampo('Observação', 'Observacao', 'observacao', 'Comentários');
 
   if (!idDocumento && !codigo && !status) return null;
@@ -415,9 +483,12 @@ export function normalizarItemHistorico(linha) {
     status: String(status || 'Recebido').trim(),
     statusAnterior: String(statusAnterior || '').trim(),
     dataHora: dataHora ? String(dataHora).trim() : new Date().toISOString(),
-    dataExibicao: dataHora ? String(dataHora).trim() : '',
+    dataExibicao: dataExibicao ? String(dataExibicao).trim() : (dataHora ? String(dataHora).trim() : ''),
     destino: String(destino || 'Qualidade').trim(),
-    responsavel: String(responsavel || 'Usuário Atual').trim(),
+    responsavel: String(responsavel || autor || 'Usuário Atual').trim(),
+    autor: String(autor || responsavel || 'Usuário Atual').trim(),
+    tipoAcao: String(tipoAcao).trim().toUpperCase(),
+    detalhes: detalhes,
     observacao: String(observacao || '').trim()
   };
 }
@@ -438,14 +509,17 @@ export async function importarArquivoExcel(arquivo) {
         const data = new Uint8Array(e.target.result);
         const workbook = window.XLSX.read(data, { type: 'array' });
 
-        // Identifica aba principal e aba de histórico se existirem
+        // Identifica aba principal, aba de histórico e aba de usuários se existirem
         let sheetPrincipalName = workbook.SheetNames[0];
         let sheetHistoricoName = null;
+        let sheetUsuariosName = null;
 
         for (const sName of workbook.SheetNames) {
           const sLimpo = sName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
           if (sLimpo.includes('historico') || sLimpo.includes('alteraco') || sLimpo.includes('log')) {
             sheetHistoricoName = sName;
+          } else if (sLimpo.includes('usuario') || sLimpo.includes('user')) {
+            sheetUsuariosName = sName;
           } else if (sLimpo.includes('tramitac') || sLimpo.includes('base') || sLimpo.includes('document')) {
             sheetPrincipalName = sName;
           }
@@ -478,11 +552,24 @@ export async function importarArquivoExcel(arquivo) {
           }
         }
 
+        // Se encontrou aba de usuários, importa a base de usuários
+        let usuariosImportados = [];
+        if (sheetUsuariosName && workbook.Sheets[sheetUsuariosName]) {
+          const wsUsers = workbook.Sheets[sheetUsuariosName];
+          const linhasUsersBrutas = window.XLSX.utils.sheet_to_json(wsUsers, { defval: '' });
+          usuariosImportados = linhasUsersBrutas.map(normalizarItemUsuario).filter(Boolean);
+
+          if (usuariosImportados.length > 0) {
+            salvarUsuarios(usuariosImportados);
+          }
+        }
+
         salvarTramitacoes(tramitacoesValidas, `Arquivo: ${arquivo.name}`);
         resolve({
           sucesso: true,
           total: tramitacoesValidas.length,
           totalHistorico: historicoImportado.length,
+          totalUsuarios: usuariosImportados.length,
           itens: tramitacoesValidas
         });
       } catch (err) {
@@ -495,9 +582,9 @@ export async function importarArquivoExcel(arquivo) {
 }
 
 /**
- * Exporta a base completa com duas abas: Tramitações e Histórico de Alterações
+ * Exporta a base completa com 3 abas: Tramitações, Histórico de Alterações e Usuários
  */
-export function exportarPlanilhaCompletaExcel(nomeArquivo = 'DocFlow_Tramitacoes_e_Historico.xlsx') {
+export function exportarPlanilhaCompletaExcel(nomeArquivo = 'DocFlow_Base_Completa.xlsx') {
   if (!window.XLSX) {
     console.warn("Biblioteca SheetJS não encontrada para exportação multi-aba.");
     return false;
@@ -505,6 +592,7 @@ export function exportarPlanilhaCompletaExcel(nomeArquivo = 'DocFlow_Tramitacoes
 
   const tramitacoes = obterTramitacoes();
   const historico = obterTodoHistorico();
+  const usuarios = obterUsuarios();
 
   const rowsTramitacoes = tramitacoes.map(t => ({
     "ID": t.id || `DOC-${t.codigo || '0'}`,
@@ -531,15 +619,30 @@ export function exportarPlanilhaCompletaExcel(nomeArquivo = 'DocFlow_Tramitacoes
     "Data/Hora": h.dataExibicao || h.dataHora,
     "Destino": h.destino || '',
     "Responsável": h.responsavel || '',
-    "Observação": h.observacao || ''
+    "Autor": h.autor || h.responsavel || '',
+    "Tipo de Ação": h.tipoAcao || 'STATUS',
+    "Observação": h.observacao || '',
+    "Detalhes": typeof h.detalhes === 'object' && h.detalhes !== null ? JSON.stringify(h.detalhes) : (h.detalhes || '')
+  }));
+
+  const rowsUsuarios = usuarios.map(u => ({
+    "ID": u.id || '',
+    "Nome": u.nome || '',
+    "E-mail": u.email || '',
+    "Senha": u.senha || 'monto@123',
+    "Perfil": u.perfil || 'Solicitante',
+    "Área": u.area || 'Geral',
+    "Status": u.status || 'Ativo'
   }));
 
   const wb = window.XLSX.utils.book_new();
   const wsTram = window.XLSX.utils.json_to_sheet(rowsTramitacoes);
   const wsHist = window.XLSX.utils.json_to_sheet(rowsHistorico);
+  const wsUsers = window.XLSX.utils.json_to_sheet(rowsUsuarios);
 
   window.XLSX.utils.book_append_sheet(wb, wsTram, "Tramitações");
   window.XLSX.utils.book_append_sheet(wb, wsHist, "Histórico de Alterações");
+  window.XLSX.utils.book_append_sheet(wb, wsUsers, "Usuários");
 
   window.XLSX.writeFile(wb, nomeArquivo);
   return true;
@@ -582,8 +685,69 @@ export async function buscarDadosDoPowerAutomate() {
 
     const payload = await resposta.json();
     
-    // Trata se o Power Automate devolver { value: [...] } ou diretamente a lista [...]
-    const listaLinhas = Array.isArray(payload) ? payload : (payload.value || payload.d?.results || []);
+    // 1. Extração da Tabela de Tramitações
+    let listaLinhas = [];
+    if (payload && typeof payload === 'object') {
+      if (Array.isArray(payload.tramitacoes)) {
+        listaLinhas = payload.tramitacoes;
+      } else if (Array.isArray(payload.value)) {
+        listaLinhas = payload.value;
+      } else if (Array.isArray(payload)) {
+        listaLinhas = payload;
+      } else if (Array.isArray(payload.d?.results)) {
+        listaLinhas = payload.d.results;
+      }
+    }
+
+    // 2. Extração da Tabela de Histórico de Alterações / Eventos
+    let totalHistoricoCarregado = 0;
+    if (payload && typeof payload === 'object') {
+      const listaHistBruta = payload.historico || payload.historicoAlteracoes || payload['Histórico de Alterações'] || payload['Historico_Alteracoes'] || payload['Historico_Eventos'] || payload.eventos;
+      if (Array.isArray(listaHistBruta) && listaHistBruta.length > 0) {
+        const histNormalizado = listaHistBruta
+          .map(normalizarItemHistorico)
+          .filter(h => {
+            if (!h) return false;
+            const cod = (h.codigo || '').trim().toLowerCase();
+            const idDoc = (h.idDocumento || '').trim().toLowerCase();
+            if (cod === 'monto-001' || idDoc === 'doc-monto-001') return false;
+            return Boolean(h.status && (cod || idDoc));
+          });
+
+        if (histNormalizado.length > 0) {
+          // Mantém o histórico limpo com o último status de cada documento
+          const mapaHist = new Map();
+          histNormalizado.forEach(h => {
+            let chaveDoc = (h.codigo || '').trim().toLowerCase();
+            if (!chaveDoc) {
+              const idLimpo = (h.idDocumento || '').trim().toLowerCase().replace(/^doc-/, '');
+              chaveDoc = (idLimpo.includes('suprimento') || idLimpo.includes('muen') || idLimpo.includes('muem')) ? 'suprimentos' : (idLimpo || 'suprimentos');
+            }
+            const existente = mapaHist.get(chaveDoc);
+            if (!existente || new Date(h.dataHora || 0) >= new Date(existente.dataHora || 0)) {
+              mapaHist.set(chaveDoc, h);
+            }
+          });
+
+          const historicoConsolidado = Array.from(mapaHist.values());
+          salvarTodoHistorico(historicoConsolidado);
+          totalHistoricoCarregado = historicoConsolidado.length;
+        }
+      }
+    }
+
+    // 3. Extração da Tabela de Usuários
+    let totalUsuariosCarregado = 0;
+    if (payload && typeof payload === 'object') {
+      const listaUsersBruta = payload.usuarios || payload['Usuários'] || payload.users || payload['Usuarios'] || payload['Tabela_Usuarios'];
+      if (Array.isArray(listaUsersBruta) && listaUsersBruta.length > 0) {
+        const usersNormalizados = listaUsersBruta.map(normalizarItemUsuario).filter(Boolean);
+        if (usersNormalizados.length > 0) {
+          salvarUsuarios(usersNormalizados);
+          totalUsuariosCarregado = usersNormalizados.length;
+        }
+      }
+    }
     
     const modificacoes = obterModificacoesLocais();
 
@@ -613,6 +777,8 @@ export async function buscarDadosDoPowerAutomate() {
     return {
       sucesso: true,
       total: tramitacoesValidas.length,
+      totalHistorico: totalHistoricoCarregado,
+      totalUsuarios: totalUsuariosCarregado,
       itens: tramitacoesValidas
     };
   } catch (erro) {
@@ -664,12 +830,56 @@ export function definirTema(novoTema) {
 
 export function aplicarTemaSalvo() {
   const tema = obterTemaAtual();
-  document.documentElement.setAttribute('data-theme', tema);
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', tema);
+  }
   return tema;
 }
 
-// Aplica imediatamente ao carregar o script
-aplicarTemaSalvo();
+// Aplica imediatamente ao carregar o script no navegador
+if (typeof document !== 'undefined') {
+  aplicarTemaSalvo();
+}
+
+/**
+ * Exibe uma notificação push tipo toast discreta no topo da tela (posição idêntica ao push de cancelamento)
+ * Sem botão de desfazer, com visual sutil e encerramento automático.
+ */
+export function mostrarNotificacaoToast(mensagem = 'Sincronização concluída', tempoSegundos = 3) {
+  if (typeof document === 'undefined') return;
+
+  const anterior = document.getElementById('toast-push-container');
+  if (anterior) anterior.remove();
+
+  const container = document.createElement('div');
+  container.id = 'toast-push-container';
+  container.className = 'toast-push-container';
+
+  container.innerHTML = `
+    <div class="toast-push-box" id="toast-push-box">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" class="toast-push-icone">
+        <path d="M20 6L9 17l-5-5"/>
+      </svg>
+      <span class="toast-push-texto">${mensagem}</span>
+    </div>
+  `;
+
+  document.body.appendChild(container);
+
+  const box = container.querySelector('#toast-push-box');
+  const fechar = () => {
+    if (box) box.classList.add('fade-out');
+    setTimeout(() => {
+      if (container && container.parentNode) container.remove();
+    }, 280);
+  };
+
+  setTimeout(fechar, tempoSegundos * 1000);
+}
+
+if (typeof window !== 'undefined') {
+  window.mostrarNotificacaoToast = mostrarNotificacaoToast;
+}
 
 /**
  * Inicialização do componente de configurações (Menu de Engrenagens no topo)
@@ -681,14 +891,50 @@ export function inicializarMenuConfiguracoes(dropdownId = 'header-settings-dropd
 
   if (!dropdown) return;
 
+  const usuarioLogado = obterUsuarioAtual();
   const info = obterInfoSincronizacao();
   const textoOrigem = info.origem.includes('Arquivo') 
     ? info.origem 
     : (info.origem === 'Power Automate (SharePoint)' ? 'Nuvem (SharePoint)' : 'Cache Local');
   const temaAtual = obterTemaAtual();
 
+  const userSectionHtml = usuarioLogado ? `
+      <!-- Seção: Usuário Logado -->
+      <div class="dropdown-user-section">
+        <div class="dropdown-user-avatar" title="${usuarioLogado.perfil || 'Usuário'}">
+          ${(usuarioLogado.nome || 'U').charAt(0).toUpperCase()}
+        </div>
+        <div class="dropdown-user-info">
+          <span class="dropdown-user-name" title="${usuarioLogado.nome}">${usuarioLogado.nome}</span>
+          <span class="dropdown-user-role">${usuarioLogado.perfil || 'Usuário'} • ${usuarioLogado.area || 'DocFlow'}</span>
+        </div>
+      </div>
+      <div class="dropdown-divider"></div>
+  ` : '';
+
+  const logoutActionHtml = usuarioLogado ? `
+          <button type="button" id="btn-dropdown-logout" class="dropdown-action-item danger" title="Encerrar sessão no DocFlow">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Sair da Conta</span>
+          </button>
+  ` : `
+          <a href="login.html" class="dropdown-action-item" title="Fazer login no DocFlow">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+            <span>Fazer Login</span>
+          </a>
+  `;
+
   dropdown.innerHTML = `
     <div class="dropdown-settings-content">
+      ${userSectionHtml}
       <!-- Seção: Aparência / Modo Escuro -->
       <div class="dropdown-section">
         <div class="dropdown-section-header">
@@ -748,6 +994,8 @@ export function inicializarMenuConfiguracoes(dropdownId = 'header-settings-dropd
             <span>Carregar Excel (.xlsx)</span>
             <input type="file" id="input-excel-file-dropdown" accept=".xlsx, .xls, .csv" style="display: none;" />
           </label>
+
+          ${logoutActionHtml}
         </div>
       </div>
     </div>
@@ -792,7 +1040,8 @@ export function inicializarMenuConfiguracoes(dropdownId = 'header-settings-dropd
       };
 
       if (resultado.sucesso) {
-        avisar(`Sincronização concluída com sucesso!\n${resultado.total} registros carregados do Excel no SharePoint.`, 'Sincronização Nuvem');
+        if (wrapper) wrapper.classList.remove('dropdown-fixado');
+        mostrarNotificacaoToast("Sincronização concluída");
       } else if (resultado.aviso) {
         avisar(`${resultado.aviso}\n\nDica: você também pode clicar em "Carregar Excel (.xlsx)" para abrir a sua planilha diretamente!`, 'Aviso de Sincronização');
       } else {
@@ -820,13 +1069,22 @@ export function inicializarMenuConfiguracoes(dropdownId = 'header-settings-dropd
 
       try {
         const resultado = await importarArquivoExcel(file);
-        avisar(`Planilha carregada com sucesso!\n${resultado.total} documentos importados para a base.`, 'Planilha Importada');
+        if (wrapper) wrapper.classList.remove('dropdown-fixado');
+        mostrarNotificacaoToast("Sincronização concluída");
         inicializarMenuConfiguracoes(dropdownId);
       } catch (err) {
         avisar(`Erro ao processar o arquivo Excel:\n${err.message}`, 'Erro na Importação');
       } finally {
         inputFile.value = '';
       }
+    });
+  }
+
+  // Evento do botão de Logout
+  const btnLogout = dropdown.querySelector('#btn-dropdown-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+      fazerLogout();
     });
   }
 
@@ -969,6 +1227,65 @@ export async function enviarArquivosParaSharePoint(dados, docPrincipalPayload, a
   };
 }
 
+/**
+ * Limpa o histórico de alterações mantendo estritamente o último status oficial dos documentos reais
+ */
+export function limparHistoricoManterUltimos() {
+  const limpo = [
+    {
+      id: "HIST-MR-IND-0001-SGA-001",
+      idDocumento: "DOC-MR-IND-0001-SGA-001",
+      codigo: "MR-IND-0001-SGA-001",
+      status: "Em Revisão",
+      statusAnterior: "",
+      dataHora: "2026-09-14T09:00:00.000Z",
+      dataExibicao: "14/09/2026 06:00",
+      destino: "SGA / Qualidade",
+      responsavel: "Claudia dos Santos",
+      autor: "Claudia dos Santos",
+      tipoAcao: "STATUS",
+      detalhes: null,
+      observacao: "Registro inicial do documento cadastrado no sistema."
+    },
+    {
+      id: "HIST-MR-IND-0001-CTO-001",
+      idDocumento: "DOC-MR-IND-0001-CTO-001",
+      codigo: "MR-IND-0001-CTO-001",
+      status: "Em Revisão",
+      statusAnterior: "",
+      dataHora: "2026-09-14T09:00:00.000Z",
+      dataExibicao: "14/09/2026 06:00",
+      destino: "Custos / Qualidade",
+      responsavel: "Polyana",
+      autor: "Polyana",
+      tipoAcao: "STATUS",
+      detalhes: null,
+      observacao: "Registro inicial do documento cadastrado no sistema."
+    },
+    {
+      id: "HIST-SUPRIMENTOS",
+      idDocumento: "DOC-MATRIZ_DE_RISCOS_E_OP",
+      codigo: "",
+      status: "Em Revisão",
+      statusAnterior: "",
+      dataHora: "2026-09-07T09:00:00.000Z",
+      dataExibicao: "07/09/2026 06:00",
+      destino: "Suprimentos / Qualidade",
+      responsavel: "Giovane",
+      autor: "Giovane",
+      tipoAcao: "STATUS",
+      detalhes: null,
+      observacao: "Documento finalizando sua emissão, faltando apenas as riscos referente ao Diligenciamento"
+    }
+  ];
+
+  salvarTodoHistorico(limpo);
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem(CHAVE_MODIFICACOES_LOCAIS);
+  }
+  return limpo;
+}
+
 if (typeof window !== 'undefined') {
   window.DocFlowDataService = {
     obterTodoHistorico,
@@ -977,7 +1294,8 @@ if (typeof window !== 'undefined') {
     adicionarHistoricoAlteracao,
     inicializarHistoricoSeNecessario,
     exportarPlanilhaCompletaExcel,
-    gerarIdDocumento
+    gerarIdDocumento,
+    limparHistoricoManterUltimos
   };
 }
 

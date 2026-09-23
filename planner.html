@@ -76,6 +76,9 @@
             <span>SharePoint</span>
           </div>
 
+          <!-- Perfil do Usuário Logado -->
+          <div class="user-profile-badge" id="header-user-badge"></div>
+
           <!-- Menu de Engrenagens (Configurações, Tema & Sincronização) -->
           <div class="header-settings-wrapper" id="header-settings-wrapper">
             <button type="button" class="header-settings-btn" id="btn-settings-toggle" aria-label="Configurações e Sincronização" title="Configurações & Sincronização">
@@ -243,6 +246,13 @@
             <span id="modal-status-badge"></span>
           </div>
           <div class="modal-header-right">
+            <button type="button" id="btn-ver-auditoria" class="btn-auditoria-modal" title="Ver histórico completo de alterações (edições, arquivos e status)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span>Histórico Completo</span>
+            </button>
             <button type="button" id="btn-editar-modal" class="btn-editar-modal" title="Editar informações do documento">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -382,18 +392,33 @@
                   <span>Atualizar Etapa</span>
                 </div>
                 <div class="stage-control-form">
-                  <select id="select-nova-etapa" class="stage-select">
-                    <option value="">Selecione novo status...</option>
-                    <option value="Recebido">Recebido</option>
-                    <option value="Em revisão da qualidade">Em revisão da qualidade</option>
-                    <option value="Devolvido para correção">Devolvido para correção</option>
-                    <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
-                    <option value="Em revisão do solicitante">Em revisão do solicitante</option>
-                    <option value="Para aprovação qualidade">Para aprovação qualidade</option>
-                    <option value="Aprovado">Aprovado</option>
-                    <option value="Cancelado">Cancelado</option>
-                  </select>
-                  <input type="text" id="input-etapa-destino" class="stage-input-destino" placeholder="Destino / Pra onde vai (ex: Qualidade)" />
+                  <div class="stage-field-group">
+                    <label for="select-nova-etapa" class="stage-field-label">Status</label>
+                    <select id="select-nova-etapa" class="stage-select">
+                      <option value="">Selecione novo status...</option>
+                      <option value="Recebido">Recebido</option>
+                      <option value="Em revisão da qualidade">Em revisão da qualidade</option>
+                      <option value="Em revisão junto à área">Em revisão junto à área</option>
+                      <option value="Devolvido para área para revisão">Devolvido para área para revisão</option>
+                      <option value="Devolvido para correção">Devolvido para correção</option>
+                      <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
+                      <option value="Em revisão do solicitante">Em revisão do solicitante</option>
+                      <option value="Para aprovação qualidade">Para aprovação qualidade</option>
+                      <option value="Aprovado">Aprovado</option>
+                      <option value="Cancelado">Cancelado</option>
+                    </select>
+                  </div>
+
+                  <div class="stage-field-group">
+                    <label for="input-etapa-observacao" class="stage-field-label">Observação</label>
+                    <textarea id="input-etapa-observacao" class="stage-input-observacao" rows="2" placeholder="Descreva os detalhes da alteração desta etapa..."></textarea>
+                  </div>
+
+                  <div class="stage-field-group" id="container-definir-responsavel" style="display: none;">
+                    <label for="input-etapa-destino" class="stage-field-label">Definir responsável</label>
+                    <input type="text" id="input-etapa-destino" class="stage-input-destino" placeholder="Ex: Gestor da Área (Custos)" />
+                  </div>
+
                   <button type="button" id="btn-salvar-nova-etapa" class="btn-stage-submit">
                     <span>Registrar Alteração</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -468,6 +493,8 @@
                 <select id="edit-status" class="edit-modal-select">
                   <option value="Recebido">Recebido</option>
                   <option value="Em revisão da qualidade">Em revisão da qualidade</option>
+                  <option value="Em revisão junto à área">Em revisão junto à área</option>
+                  <option value="Devolvido para área para revisão">Devolvido para área para revisão</option>
                   <option value="Devolvido para correção">Devolvido para correção</option>
                   <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
                   <option value="Em revisão do solicitante">Em revisão do solicitante</option>
@@ -551,6 +578,33 @@
         </div>
         <div class="modal-cancelados-body" id="cards-cancelados">
           <!-- Cards cancelados renderizados via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Histórico Completo de Alterações (Auditoria Detalhada) -->
+    <div id="modal-auditoria" class="modal-overlay" style="display: none;">
+      <div class="modal-card modal-auditoria-card">
+        <div class="modal-header">
+          <div class="modal-header-badges">
+            <span class="auditoria-badge-tag">Histórico de Alterações</span>
+            <span id="modal-auditoria-codigo" class="card-code">DOC-0001</span>
+            <span id="modal-auditoria-revisao" class="card-rev" style="background:#f1f5f9; padding:3px 8px; border-radius:4px; font-weight:600;">Rev. 0</span>
+          </div>
+          <button type="button" class="pill-btn-close" id="btn-fechar-auditoria" title="Fechar">✕</button>
+        </div>
+
+        <div class="auditoria-header-content">
+          <h3 id="modal-auditoria-titulo" class="auditoria-title">Título do Documento</h3>
+          <p class="auditoria-subtitle">Registro detalhado de todas as movimentações, edições de dados e atualizações realizadas neste documento.</p>
+        </div>
+
+        <div class="auditoria-timeline-wrapper" id="auditoria-timeline-container">
+          <!-- Lista de eventos de auditoria renderizada dinamicamente -->
+        </div>
+
+        <div class="modal-footer" style="justify-content: flex-end;">
+          <button type="button" class="btn-secundario" id="btn-fechar-auditoria-footer">Fechar</button>
         </div>
       </div>
     </div>
