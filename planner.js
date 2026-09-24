@@ -35,28 +35,64 @@ protegerPagina();
     renderizarQuadro();
   });
 
-  // Elementos do DOM
+  // Elementos do DOM das 5 Colunas do Kanban (Opção B)
+  const cardsRecebido = document.getElementById('cards-recebido');
   const cardsRevisao = document.getElementById('cards-revisao');
-  const cardsPendente = document.getElementById('cards-pendente');
+  const cardsDevolvido = document.getElementById('cards-devolvido');
+  const cardsAprovacao = document.getElementById('cards-aprovacao');
   const cardsAprovado = document.getElementById('cards-aprovado');
+
+  const countRecebido = document.getElementById('count-col-recebido');
   const countRevisao = document.getElementById('count-col-revisao');
-  const countPendente = document.getElementById('count-col-pendente');
+  const countDevolvido = document.getElementById('count-col-devolvido');
+  const countAprovacao = document.getElementById('count-col-aprovacao');
   const countAprovado = document.getElementById('count-col-aprovado');
 
   const inputBusca = document.getElementById('input-busca');
   const filtroArea = document.getElementById('filtro-area');
 
-  // KPI elements
-  const kpiTotal = document.getElementById('kpi-total');
+  // Elementos dos 5 KPIs
+  const kpiRecebido = document.getElementById('kpi-recebido');
   const kpiRevisao = document.getElementById('kpi-revisao');
-  const kpiPendente = document.getElementById('kpi-pendente');
+  const kpiDevolvido = document.getElementById('kpi-devolvido');
+  const kpiAprovacao = document.getElementById('kpi-aprovacao');
   const kpiAprovado = document.getElementById('kpi-aprovado');
+
+  const barRecebido = document.getElementById('bar-kpi-recebido');
   const barRevisao = document.getElementById('bar-kpi-revisao');
-  const barPendente = document.getElementById('bar-kpi-pendente');
+  const barDevolvido = document.getElementById('bar-kpi-devolvido');
+  const barAprovacao = document.getElementById('bar-kpi-aprovacao');
   const barAprovado = document.getElementById('bar-kpi-aprovado');
+
+  const subRecebido = document.getElementById('sub-kpi-recebido');
   const subRevisao = document.getElementById('sub-kpi-revisao');
-  const subPendente = document.getElementById('sub-kpi-pendente');
+  const subDevolvido = document.getElementById('sub-kpi-devolvido');
+  const subAprovacao = document.getElementById('sub-kpi-aprovacao');
   const subAprovado = document.getElementById('sub-kpi-aprovado');
+
+  // Retorna a classe visual do badge de acordo com a fase do status
+  function obterBadgeClassStatus(statusStr) {
+    if (!statusStr) return 'status-recebido';
+    const s = statusStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    if (s === 'cancelado') return 'status-cancelado';
+    if (s === 'aprovado' || s === 'aprovacao final') return 'status-aprovado';
+    if (s.includes('aprovacao')) return 'status-aprovacao';
+    if (s.includes('devolvido') || s.includes('solicitante') || s === 'pendente') return 'status-devolvido';
+    if (s === 'recebido') return 'status-recebido';
+    return 'status-revisao';
+  }
+
+  // Retorna a coluna do Kanban correspondente ao status (Opção B - 5 Colunas)
+  function classificarColuna(statusStr) {
+    if (!statusStr) return 'recebido';
+    const s = statusStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    if (s === 'cancelado') return 'cancelado';
+    if (s === 'aprovado' || s === 'aprovacao final') return 'aprovado';
+    if (s.includes('aprovacao')) return 'aprovacao';
+    if (s.includes('devolvido') || s.includes('solicitante') || s === 'pendente') return 'devolvido';
+    if (s === 'recebido') return 'recebido';
+    return 'revisao';
+  }
 
   // Formata data YYYY-MM-DD para DD/MM/YYYY
   function formatarData(dataStr) {
@@ -114,36 +150,48 @@ protegerPagina();
     });
   }
 
-  // Atualiza os indicadores KPIs no topo
+  // Atualiza os indicadores KPIs no topo (Opção B - 5 Etapas)
   function atualizarKPIs(itens) {
     const total = itens.length;
+    let rec = 0;
     let rev = 0;
-    let pen = 0;
+    let dev = 0;
+    let apv = 0;
     let apr = 0;
 
     itens.forEach(item => {
-      const s = (item.status || '').toLowerCase().trim();
-      if (s === 'aprovado') apr++;
-      else if (s === 'pendente') pen++;
-      else rev++; // padrão Em Revisão
+      const col = classificarColuna(item.status);
+      if (col === 'recebido') rec++;
+      else if (col === 'revisao') rev++;
+      else if (col === 'devolvido') dev++;
+      else if (col === 'aprovacao') apv++;
+      else if (col === 'aprovado') apr++;
+      else rec++;
     });
 
-    if (kpiTotal) kpiTotal.textContent = total;
+    if (kpiRecebido) kpiRecebido.textContent = rec;
     if (kpiRevisao) kpiRevisao.textContent = rev;
-    if (kpiPendente) kpiPendente.textContent = pen;
+    if (kpiDevolvido) kpiDevolvido.textContent = dev;
+    if (kpiAprovacao) kpiAprovacao.textContent = apv;
     if (kpiAprovado) kpiAprovado.textContent = apr;
 
+    const pctRec = total > 0 ? Math.round((rec / total) * 100) : 0;
     const pctRev = total > 0 ? Math.round((rev / total) * 100) : 0;
-    const pctPen = total > 0 ? Math.round((pen / total) * 100) : 0;
+    const pctDev = total > 0 ? Math.round((dev / total) * 100) : 0;
+    const pctApv = total > 0 ? Math.round((apv / total) * 100) : 0;
     const pctApr = total > 0 ? Math.round((apr / total) * 100) : 0;
 
+    if (barRecebido) barRecebido.style.width = pctRec + '%';
     if (barRevisao) barRevisao.style.width = pctRev + '%';
-    if (barPendente) barPendente.style.width = pctPen + '%';
+    if (barDevolvido) barDevolvido.style.width = pctDev + '%';
+    if (barAprovacao) barAprovacao.style.width = pctApv + '%';
     if (barAprovado) barAprovado.style.width = pctApr + '%';
 
-    if (subRevisao) subRevisao.textContent = `${pctRev}% do volume`;
-    if (subPendente) subPendente.textContent = `${pctPen}% aguardando`;
-    if (subAprovado) subAprovado.textContent = `${pctApr}% taxa de aprovação`;
+    if (subRecebido) subRecebido.textContent = `${pctRec}% novos`;
+    if (subRevisao) subRevisao.textContent = `${pctRev}% em análise`;
+    if (subDevolvido) subDevolvido.textContent = `${pctDev}% c/ a área`;
+    if (subAprovacao) subAprovacao.textContent = `${pctApv}% validação`;
+    if (subAprovado) subAprovado.textContent = `${pctApr}% concluídos`;
   }
 
   // ========================================================
@@ -701,16 +749,8 @@ protegerPagina();
     if (modalRevisao) modalRevisao.textContent = `Rev. ${item.revisao ?? '0'}`;
 
     // Status Badge
-    let badgeClass = 'badge-default';
-    const s = (item.status || '').toLowerCase().trim();
-    if (s === 'cancelado') badgeClass = 'badge-cancelado';
-    else if (s === 'aprovado' || s === 'aprovação final') badgeClass = 'badge-aprovado';
-    else if (s.includes('revisão junto à área') || s.includes('revisao junto a area')) badgeClass = 'badge-revisao-area';
-    else if (s.includes('revis') || s.includes('qualidade')) badgeClass = 'badge-revisao';
-    else if (s === 'pendente' || s.includes('devolvido') || s.includes('solicitante')) badgeClass = 'badge-pendente';
-
     if (modalStatusBadge) {
-      modalStatusBadge.innerHTML = `<span class="badge ${badgeClass}">${item.status || 'Em Revisão'}</span>`;
+      modalStatusBadge.innerHTML = `<span class="card-status-pill ${obterBadgeClassStatus(item.status)}">${item.status || 'Recebido'}</span>`;
     }
 
     if (modalTitulo) modalTitulo.textContent = item.titulo || 'Documento sem título';
@@ -791,36 +831,58 @@ protegerPagina();
       }
     }
 
-    // Ações rápidas no modal (Aprovar, Revisar, Pendente, Cancelar)
+    // Ações rápidas no modal para as etapas
     if (modalQuickActions) {
       let btns = '';
-      if (s === 'cancelado') {
+      const colAtual = classificarColuna(item.status);
+
+      if (colAtual === 'cancelado') {
         btns = `
-          <button class="btn-primario" style="background:#2563eb; font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Em Revisão'); window.abrirModalDetalhes(${indexOriginal});">
+          <button class="btn-primario" style="background:#2563eb; font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Recebido'); window.abrirModalDetalhes(${indexOriginal});">
             ↺ Reativar Documento
           </button>
         `;
       } else {
-        if (s === 'aprovado') {
+        if (colAtual === 'aprovado') {
           btns = `
-            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Em Revisão'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Em revisão da qualidade'); window.abrirModalDetalhes(${indexOriginal});">
               ↺ Reabrir Revisão
             </button>
           `;
-        } else if (s === 'pendente') {
+        } else if (colAtual === 'recebido') {
           btns = `
-            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Em Revisão'); window.abrirModalDetalhes(${indexOriginal});">
-              🔍 Em Revisão
+            <button class="btn-primario" style="background: var(--cor-laranja, #F39C12); font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Em revisão da qualidade'); window.abrirModalDetalhes(${indexOriginal});">
+              🔍 Iniciar Revisão
+            </button>
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Devolvido para área para revisão'); window.abrirModalDetalhes(${indexOriginal});">
+              ↩ Devolver à Área
+            </button>
+          `;
+        } else if (colAtual === 'revisao') {
+          btns = `
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Devolvido para área para revisão'); window.abrirModalDetalhes(${indexOriginal});">
+              ↩ Devolver à Área
+            </button>
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Para aprovação da área solicitante'); window.abrirModalDetalhes(${indexOriginal});">
+              📋 P/ Aprovação
             </button>
             <button class="btn-primario" style="background:#10b981; font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Aprovado'); window.abrirModalDetalhes(${indexOriginal});">
               ✓ Aprovar
             </button>
           `;
-        } else {
-          // Em Revisão
+        } else if (colAtual === 'devolvido') {
           btns = `
-            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Pendente'); window.abrirModalDetalhes(${indexOriginal});">
-              ⏳ Pendente
+            <button class="btn-primario" style="background: var(--cor-laranja, #F39C12); font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Em revisão da qualidade'); window.abrirModalDetalhes(${indexOriginal});">
+              🔍 Retomar Revisão
+            </button>
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Para aprovação da área solicitante'); window.abrirModalDetalhes(${indexOriginal});">
+              📋 P/ Aprovação
+            </button>
+          `;
+        } else if (colAtual === 'aprovacao') {
+          btns = `
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Devolvido para correção'); window.abrirModalDetalhes(${indexOriginal});">
+              ↩ Devolver p/ Correção
             </button>
             <button class="btn-primario" style="background:#10b981; font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Aprovado'); window.abrirModalDetalhes(${indexOriginal});">
               ✓ Aprovar
@@ -1185,7 +1247,10 @@ protegerPagina();
 
         <h4 class="card-heading">${item.titulo}</h4>
 
-        ${item.tipoDocumento ? `<span class="card-type-tag">${item.tipoDocumento}</span>` : ''}
+        <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+          <span class="card-status-pill ${obterBadgeClassStatus(item.status)}">${item.status || 'Recebido'}</span>
+          ${item.tipoDocumento ? `<span class="card-type-tag">${item.tipoDocumento}</span>` : ''}
+        </div>
 
         <div class="card-meta-row">
           <div class="user-info">
@@ -1295,21 +1360,29 @@ protegerPagina();
     });
 
     // Separa por colunas (Cancelados são isolados do quadro ativo)
+    const colRecebidoItens = [];
     const colRevisaoItens = [];
-    const colPendenteItens = [];
+    const colDevolvidoItens = [];
+    const colAprovacaoItens = [];
     const colAprovadoItens = [];
     const colCanceladosItens = [];
 
     itensFiltrados.forEach(item => {
-      const s = (item.status || '').toLowerCase().trim();
-      if (s === 'cancelado') {
+      const col = classificarColuna(item.status);
+      if (col === 'cancelado') {
         colCanceladosItens.push(item);
-      } else if (s === 'aprovado' || s === 'aprovação final') {
+      } else if (col === 'recebido') {
+        colRecebidoItens.push(item);
+      } else if (col === 'revisao') {
+        colRevisaoItens.push(item);
+      } else if (col === 'devolvido') {
+        colDevolvidoItens.push(item);
+      } else if (col === 'aprovacao') {
+        colAprovacaoItens.push(item);
+      } else if (col === 'aprovado') {
         colAprovadoItens.push(item);
-      } else if (s === 'pendente' || s.includes('devolvido') || s.includes('aprovação da área') || s.includes('aprovacao da area')) {
-        colPendenteItens.push(item);
       } else {
-        colRevisaoItens.push(item); // Padrão: Em Revisão (Recebido, Em revisão da qualidade, Em revisão do solicitante, Para aprovação qualidade)
+        colRecebidoItens.push(item);
       }
     });
 
@@ -1318,29 +1391,45 @@ protegerPagina();
     atualizarKPIs(itensAtivos);
 
     // Atualiza contadores das colunas principais
+    if (countRecebido) countRecebido.textContent = colRecebidoItens.length;
     if (countRevisao) countRevisao.textContent = colRevisaoItens.length;
-    if (countPendente) countPendente.textContent = colPendenteItens.length;
+    if (countDevolvido) countDevolvido.textContent = colDevolvidoItens.length;
+    if (countAprovacao) countAprovacao.textContent = colAprovacaoItens.length;
     if (countAprovado) countAprovado.textContent = colAprovadoItens.length;
 
     // Atualiza contador do botão e modal de cancelados
     if (countCancelados) countCancelados.textContent = colCanceladosItens.length;
     if (modalCanceladosCount) modalCanceladosCount.textContent = colCanceladosItens.length;
 
-    // Renderiza Coluna Em Revisão
+    // Renderiza Coluna 1: Recebido
+    if (cardsRecebido) {
+      cardsRecebido.innerHTML = colRecebidoItens.length === 0 
+        ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhum documento recebido</div>'
+        : colRecebidoItens.map(item => criarCartao(item, item._idx)).join('');
+    }
+
+    // Renderiza Coluna 2: Em Revisão
     if (cardsRevisao) {
       cardsRevisao.innerHTML = colRevisaoItens.length === 0 
         ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhum documento em revisão</div>'
         : colRevisaoItens.map(item => criarCartao(item, item._idx)).join('');
     }
 
-    // Renderiza Coluna Pendente
-    if (cardsPendente) {
-      cardsPendente.innerHTML = colPendenteItens.length === 0 
-        ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhuma pendência ativa</div>'
-        : colPendenteItens.map(item => criarCartao(item, item._idx)).join('');
+    // Renderiza Coluna 3: Devolvido à Área
+    if (cardsDevolvido) {
+      cardsDevolvido.innerHTML = colDevolvidoItens.length === 0 
+        ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhum documento devolvido</div>'
+        : colDevolvidoItens.map(item => criarCartao(item, item._idx)).join('');
     }
 
-    // Renderiza Coluna Aprovado
+    // Renderiza Coluna 4: Em Aprovação
+    if (cardsAprovacao) {
+      cardsAprovacao.innerHTML = colAprovacaoItens.length === 0 
+        ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhum documento em aprovação</div>'
+        : colAprovacaoItens.map(item => criarCartao(item, item._idx)).join('');
+    }
+
+    // Renderiza Coluna 5: Aprovado
     if (cardsAprovado) {
       cardsAprovado.innerHTML = colAprovadoItens.length === 0 
         ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhum documento aprovado</div>'

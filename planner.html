@@ -97,26 +97,29 @@
 
     <main class="main-container">
 
-      <!-- Indicadores Visuais de Desempenho (KPIs) -->
+      <!-- Indicadores Visuais de Desempenho (KPIs do Fluxo em 5 Etapas) -->
       <section class="kpi-grid">
+        <!-- KPI 1: Recebidos -->
         <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-label">Volume Total</span>
+            <span class="kpi-label">Recebidos</span>
             <div class="kpi-icon-pill" style="background-color: #eff6ff; color: #2563eb;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
               </svg>
             </div>
           </div>
-          <span class="kpi-val" id="kpi-total">0</span>
-          <div class="kpi-progress"><div class="kpi-bar blue" style="width: 100%;"></div></div>
-          <span class="kpi-subtext">Total de tramitações registradas</span>
+          <span class="kpi-val" id="kpi-recebido">0</span>
+          <div class="kpi-progress"><div class="kpi-bar blue" id="bar-kpi-recebido" style="width: 0%;"></div></div>
+          <span class="kpi-subtext" id="sub-kpi-recebido">0% na triagem</span>
         </div>
 
+        <!-- KPI 2: Em Revisão -->
         <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-label">Em Análise</span>
-            <div class="kpi-icon-pill" style="background-color: #fffbeb; color: #d97706;">
+            <span class="kpi-label">Em Revisão</span>
+            <div class="kpi-icon-pill" style="background-color: #fff7ed; color: #ea580c;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
@@ -128,10 +131,27 @@
           <span class="kpi-subtext" id="sub-kpi-revisao">0% sob análise</span>
         </div>
 
+        <!-- KPI 3: Devolvidos à Área -->
         <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-label">Pendentes</span>
-            <div class="kpi-icon-pill" style="background-color: #f0f9ff; color: #0284c7;">
+            <span class="kpi-label">Devolvidos à Área</span>
+            <div class="kpi-icon-pill" style="background-color: #fef3c7; color: #d97706;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+            </div>
+          </div>
+          <span class="kpi-val" id="kpi-devolvido">0</span>
+          <div class="kpi-progress"><div class="kpi-bar coral" id="bar-kpi-devolvido" style="width: 0%;"></div></div>
+          <span class="kpi-subtext" id="sub-kpi-devolvido">0% com o solicitante</span>
+        </div>
+
+        <!-- KPI 4: Em Aprovação -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-label">Em Aprovação</span>
+            <div class="kpi-icon-pill" style="background-color: #f5f3ff; color: #7c3aed;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -139,14 +159,15 @@
               </svg>
             </div>
           </div>
-          <span class="kpi-val" id="kpi-pendente">0</span>
-          <div class="kpi-progress"><div class="kpi-bar sky" id="bar-kpi-pendente" style="width: 0%;"></div></div>
-          <span class="kpi-subtext" id="sub-kpi-pendente">0% aguardando ação</span>
+          <span class="kpi-val" id="kpi-aprovacao">0</span>
+          <div class="kpi-progress"><div class="kpi-bar purple" id="bar-kpi-aprovacao" style="width: 0%;"></div></div>
+          <span class="kpi-subtext" id="sub-kpi-aprovacao">0% em validação</span>
         </div>
 
+        <!-- KPI 5: Aprovados -->
         <div class="kpi-card">
           <div class="kpi-top">
-            <span class="kpi-label">documentos aprovados</span>
+            <span class="kpi-label">Aprovados</span>
             <div class="kpi-icon-pill" style="background-color: #f0fdf4; color: #16a34a;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -194,9 +215,21 @@
         </div>
       </section>
 
-      <!-- Quadro Planner (Kanban por Status) -->
+      <!-- Quadro Planner (Kanban por Status em 5 Colunas - Opção B) -->
       <section class="planner-board">
-        <!-- Coluna 1: Em Revisão -->
+        <!-- Coluna 1: Recebido -->
+        <div class="planner-col" id="col-recebido" style="border-top: 3px solid #2563eb;">
+          <div class="planner-col-header">
+            <div class="col-header-left">
+              <span class="col-dot blue"></span>
+              <span class="planner-col-title">Recebido</span>
+            </div>
+            <span class="col-count-pill" id="count-col-recebido">0</span>
+          </div>
+          <div class="cards-container" id="cards-recebido"></div>
+        </div>
+
+        <!-- Coluna 2: Em Revisão -->
         <div class="planner-col" id="col-revisao" style="border-top: 3px solid var(--cor-pessego, #F69463);">
           <div class="planner-col-header">
             <div class="col-header-left">
@@ -208,19 +241,31 @@
           <div class="cards-container" id="cards-revisao"></div>
         </div>
 
-        <!-- Coluna 2: Pendente -->
-        <div class="planner-col" id="col-pendente" style="border-top: 3px solid var(--cor-ambar, #FBBA6D);">
+        <!-- Coluna 3: Devolvido à Área -->
+        <div class="planner-col" id="col-devolvido" style="border-top: 3px solid #d97706;">
           <div class="planner-col-header">
             <div class="col-header-left">
-              <span class="col-dot sky"></span>
-              <span class="planner-col-title">Pendente</span>
+              <span class="col-dot coral"></span>
+              <span class="planner-col-title">Devolvido à Área</span>
             </div>
-            <span class="col-count-pill" id="count-col-pendente">0</span>
+            <span class="col-count-pill" id="count-col-devolvido">0</span>
           </div>
-          <div class="cards-container" id="cards-pendente"></div>
+          <div class="cards-container" id="cards-devolvido"></div>
         </div>
 
-        <!-- Coluna 3: Aprovado -->
+        <!-- Coluna 4: Em Aprovação -->
+        <div class="planner-col" id="col-aprovacao" style="border-top: 3px solid #8b5cf6;">
+          <div class="planner-col-header">
+            <div class="col-header-left">
+              <span class="col-dot purple"></span>
+              <span class="planner-col-title">Em Aprovação</span>
+            </div>
+            <span class="col-count-pill" id="count-col-aprovacao">0</span>
+          </div>
+          <div class="cards-container" id="cards-aprovacao"></div>
+        </div>
+
+        <!-- Coluna 5: Aprovado -->
         <div class="planner-col" id="col-aprovado" style="border-top: 3px solid var(--cor-verde, #668D58);">
           <div class="planner-col-header">
             <div class="col-header-left">
@@ -396,16 +441,27 @@
                     <label for="select-nova-etapa" class="stage-field-label">Status</label>
                     <select id="select-nova-etapa" class="stage-select">
                       <option value="">Selecione novo status...</option>
-                      <option value="Recebido">Recebido</option>
-                      <option value="Em revisão da qualidade">Em revisão da qualidade</option>
-                      <option value="Em revisão junto à área">Em revisão junto à área</option>
-                      <option value="Devolvido para área para revisão">Devolvido para área para revisão</option>
-                      <option value="Devolvido para correção">Devolvido para correção</option>
-                      <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
-                      <option value="Em revisão do solicitante">Em revisão do solicitante</option>
-                      <option value="Para aprovação qualidade">Para aprovação qualidade</option>
-                      <option value="Aprovado">Aprovado</option>
-                      <option value="Cancelado">Cancelado</option>
+                      <optgroup label="1. Entrada & Triagem">
+                        <option value="Recebido">Recebido</option>
+                      </optgroup>
+                      <optgroup label="2. Em Análise Técnica (Qualidade)">
+                        <option value="Em revisão da qualidade">Em revisão da qualidade</option>
+                        <option value="Em revisão junto à área">Em revisão junto à área</option>
+                        <option value="Em Revisão">Em Revisão (Geral)</option>
+                      </optgroup>
+                      <optgroup label="3. Devolvido para a Área">
+                        <option value="Devolvido para área para revisão">Devolvido para área para revisão</option>
+                        <option value="Devolvido para correção">Devolvido para correção</option>
+                        <option value="Em revisão do solicitante">Em revisão do solicitante</option>
+                      </optgroup>
+                      <optgroup label="4. Em Validação & Aprovação">
+                        <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
+                        <option value="Para aprovação qualidade">Para aprovação qualidade</option>
+                      </optgroup>
+                      <optgroup label="5. Conclusão & Arquivo">
+                        <option value="Aprovado">Aprovado</option>
+                        <option value="Cancelado">Cancelado</option>
+                      </optgroup>
                     </select>
                   </div>
 
@@ -491,18 +547,27 @@
               <div class="edit-modal-box">
                 <label for="edit-status">Status da Tramitação</label>
                 <select id="edit-status" class="edit-modal-select">
-                  <option value="Recebido">Recebido</option>
-                  <option value="Em revisão da qualidade">Em revisão da qualidade</option>
-                  <option value="Em revisão junto à área">Em revisão junto à área</option>
-                  <option value="Devolvido para área para revisão">Devolvido para área para revisão</option>
-                  <option value="Devolvido para correção">Devolvido para correção</option>
-                  <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
-                  <option value="Em revisão do solicitante">Em revisão do solicitante</option>
-                  <option value="Para aprovação qualidade">Para aprovação qualidade</option>
-                  <option value="Em Revisão">Em Revisão (Geral)</option>
-                  <option value="Pendente">Pendente</option>
-                  <option value="Aprovado">Aprovado</option>
-                  <option value="Cancelado">Cancelado</option>
+                  <optgroup label="1. Entrada & Triagem">
+                    <option value="Recebido">Recebido</option>
+                  </optgroup>
+                  <optgroup label="2. Em Análise Técnica (Qualidade)">
+                    <option value="Em revisão da qualidade">Em revisão da qualidade</option>
+                    <option value="Em revisão junto à área">Em revisão junto à área</option>
+                    <option value="Em Revisão">Em Revisão (Geral)</option>
+                  </optgroup>
+                  <optgroup label="3. Devolvido para a Área">
+                    <option value="Devolvido para área para revisão">Devolvido para área para revisão</option>
+                    <option value="Devolvido para correção">Devolvido para correção</option>
+                    <option value="Em revisão do solicitante">Em revisão do solicitante</option>
+                  </optgroup>
+                  <optgroup label="4. Em Validação & Aprovação">
+                    <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
+                    <option value="Para aprovação qualidade">Para aprovação qualidade</option>
+                  </optgroup>
+                  <optgroup label="5. Conclusão & Arquivo">
+                    <option value="Aprovado">Aprovado</option>
+                    <option value="Cancelado">Cancelado</option>
+                  </optgroup>
                 </select>
               </div>
 
