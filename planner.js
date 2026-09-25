@@ -51,23 +51,15 @@ protegerPagina();
   const inputBusca = document.getElementById('input-busca');
   const filtroArea = document.getElementById('filtro-area');
 
-  // Elementos dos 5 KPIs
-  const kpiRecebido = document.getElementById('kpi-recebido');
-  const kpiRevisao = document.getElementById('kpi-revisao');
-  const kpiDevolvido = document.getElementById('kpi-devolvido');
-  const kpiAprovacao = document.getElementById('kpi-aprovacao');
+  // Elementos dos 4 KPIs focados em prazo
+  const kpiTotal = document.getElementById('kpi-total');
+  const kpiVencendo = document.getElementById('kpi-vencendo');
+  const kpiAtrasado = document.getElementById('kpi-atrasado');
   const kpiAprovado = document.getElementById('kpi-aprovado');
 
-  const barRecebido = document.getElementById('bar-kpi-recebido');
-  const barRevisao = document.getElementById('bar-kpi-revisao');
-  const barDevolvido = document.getElementById('bar-kpi-devolvido');
-  const barAprovacao = document.getElementById('bar-kpi-aprovacao');
-  const barAprovado = document.getElementById('bar-kpi-aprovado');
-
-  const subRecebido = document.getElementById('sub-kpi-recebido');
-  const subRevisao = document.getElementById('sub-kpi-revisao');
-  const subDevolvido = document.getElementById('sub-kpi-devolvido');
-  const subAprovacao = document.getElementById('sub-kpi-aprovacao');
+  const subTotal = document.getElementById('sub-kpi-total');
+  const subVencendo = document.getElementById('sub-kpi-vencendo');
+  const subAtrasado = document.getElementById('sub-kpi-atrasado');
   const subAprovado = document.getElementById('sub-kpi-aprovado');
 
   // Retorna a classe visual do badge de acordo com a fase do status
@@ -110,6 +102,43 @@ protegerPagina();
     return nome.trim().charAt(0).toUpperCase();
   }
 
+  // Calcula o estado do prazo de revisão (atrasado / vencendo / no prazo) a partir de uma data YYYY-MM-DD
+  function calcularStatusPrazo(dataRevisaoStr) {
+    if (!dataRevisaoStr) return null;
+    const partes = dataRevisaoStr.split('-');
+    if (partes.length !== 3) return null;
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const prazo = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+    if (isNaN(prazo.getTime())) return null;
+
+    const diffDias = Math.round((prazo - hoje) / 86400000);
+
+    if (diffDias < 0) {
+      const dias = Math.abs(diffDias);
+      return { classe: 'prazo-atrasado', texto: `Atrasado há ${dias} dia${dias !== 1 ? 's' : ''}`, diffDias };
+    }
+    if (diffDias === 0) {
+      return { classe: 'prazo-vencendo', texto: 'Vence hoje', diffDias };
+    }
+    if (diffDias <= 5) {
+      return { classe: 'prazo-vencendo', texto: `Vence em ${diffDias} dia${diffDias !== 1 ? 's' : ''}`, diffDias };
+    }
+    return { classe: 'prazo-ok', texto: `Prazo: ${formatarData(dataRevisaoStr)}`, diffDias };
+  }
+
+  // Conta quantas vezes o documento já foi devolvido ao solicitante/área (retrabalho), a partir do histórico
+  function contarDevolucoes(item, indexOriginal) {
+    const idDoc = item.id || gerarIdDocumento(item, indexOriginal);
+    inicializarHistoricoSeNecessario(item);
+    const historico = obterHistoricoDocumento(idDoc || item.codigo);
+    return historico.filter(h => {
+      const s = (h.status || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      return s.includes('devolvido');
+    }).length;
+  }
+
   // Envia atualização de status para o Power Automate (apenas se houver fluxo específico de UpdateRow configurado)
   async function sincronizarComPowerAutomate(item) {
     if (!URL_WEBHOOK_POWER_AUTOMATE || URL_WEBHOOK_POWER_AUTOMATE.trim() === '' || URL_WEBHOOK_POWER_AUTOMATE.includes("COLE_AQUI")) {
@@ -150,48 +179,35 @@ protegerPagina();
     });
   }
 
-  // Atualiza os indicadores KPIs no topo (Opção B - 5 Etapas)
+  // Atualiza os 4 indicadores focados em prazo (Total ativo / Vencendo / Atrasados / Aprovados)
   function atualizarKPIs(itens) {
-    const total = itens.length;
-    let rec = 0;
-    let rev = 0;
-    let dev = 0;
-    let apv = 0;
-    let apr = 0;
+    let ativos = 0;
+    let vencendo = 0;
+    let atrasado = 0;
+    let aprovado = 0;
 
     itens.forEach(item => {
       const col = classificarColuna(item.status);
-      if (col === 'recebido') rec++;
-      else if (col === 'revisao') rev++;
-      else if (col === 'devolvido') dev++;
-      else if (col === 'aprovacao') apv++;
-      else if (col === 'aprovado') apr++;
-      else rec++;
+      if (col === 'aprovado') {
+        aprovado++;
+        return;
+      }
+      ativos++;
+      const infoPrazo = calcularStatusPrazo(item.dataRevisao);
+      if (!infoPrazo) return;
+      if (infoPrazo.classe === 'prazo-atrasado') atrasado++;
+      else if (infoPrazo.classe === 'prazo-vencendo') vencendo++;
     });
 
-    if (kpiRecebido) kpiRecebido.textContent = rec;
-    if (kpiRevisao) kpiRevisao.textContent = rev;
-    if (kpiDevolvido) kpiDevolvido.textContent = dev;
-    if (kpiAprovacao) kpiAprovacao.textContent = apv;
-    if (kpiAprovado) kpiAprovado.textContent = apr;
+    if (kpiTotal) kpiTotal.textContent = ativos;
+    if (kpiVencendo) kpiVencendo.textContent = vencendo;
+    if (kpiAtrasado) kpiAtrasado.textContent = atrasado;
+    if (kpiAprovado) kpiAprovado.textContent = aprovado;
 
-    const pctRec = total > 0 ? Math.round((rec / total) * 100) : 0;
-    const pctRev = total > 0 ? Math.round((rev / total) * 100) : 0;
-    const pctDev = total > 0 ? Math.round((dev / total) * 100) : 0;
-    const pctApv = total > 0 ? Math.round((apv / total) * 100) : 0;
-    const pctApr = total > 0 ? Math.round((apr / total) * 100) : 0;
-
-    if (barRecebido) barRecebido.style.width = pctRec + '%';
-    if (barRevisao) barRevisao.style.width = pctRev + '%';
-    if (barDevolvido) barDevolvido.style.width = pctDev + '%';
-    if (barAprovacao) barAprovacao.style.width = pctApv + '%';
-    if (barAprovado) barAprovado.style.width = pctApr + '%';
-
-    if (subRecebido) subRecebido.textContent = `${pctRec}% novos`;
-    if (subRevisao) subRevisao.textContent = `${pctRev}% em análise`;
-    if (subDevolvido) subDevolvido.textContent = `${pctDev}% c/ a área`;
-    if (subAprovacao) subAprovacao.textContent = `${pctApv}% validação`;
-    if (subAprovado) subAprovado.textContent = `${pctApr}% concluídos`;
+    if (subTotal) subTotal.textContent = 'documentos em tramitação ativa';
+    if (subVencendo) subVencendo.textContent = 'prazo entre hoje e 5 dias';
+    if (subAtrasado) subAtrasado.textContent = 'passaram do prazo de revisão';
+    if (subAprovado) subAprovado.textContent = 'concluídos este mês';
   }
 
   // ========================================================
@@ -1238,6 +1254,10 @@ protegerPagina();
     const dataExibicao = item.dataRevisao ? formatarData(item.dataRevisao) : formatarData(item.dataRecebimento);
     const labelData = item.dataRevisao ? 'Revisão até' : 'Recebido em';
 
+    const colAtual = classificarColuna(item.status);
+    const infoPrazo = colAtual !== 'aprovado' ? calcularStatusPrazo(item.dataRevisao) : null;
+    const qtdDevolucoes = contarDevolucoes(item, indexOriginal);
+
     return `
       <div class="planner-card" onclick="window.abrirModalDetalhes(${indexOriginal})" title="Clique para ver os detalhes completos">
         <div class="card-top-line">
@@ -1251,6 +1271,13 @@ protegerPagina();
           <span class="card-status-pill ${obterBadgeClassStatus(item.status)}">${item.status || 'Recebido'}</span>
           ${item.tipoDocumento ? `<span class="card-type-tag">${item.tipoDocumento}</span>` : ''}
         </div>
+
+        ${(infoPrazo || qtdDevolucoes > 0) ? `
+          <div class="card-prazo-row">
+            ${infoPrazo ? `<span class="prazo-pill ${infoPrazo.classe}">${infoPrazo.texto}</span>` : '<span></span>'}
+            ${qtdDevolucoes > 0 ? `<span class="devolucao-pill" title="Este documento já retornou ${qtdDevolucoes} vez${qtdDevolucoes !== 1 ? 'es' : ''} ao solicitante/área">↺ ${qtdDevolucoes}×</span>` : ''}
+          </div>
+        ` : ''}
 
         <div class="card-meta-row">
           <div class="user-info">

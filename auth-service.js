@@ -217,7 +217,7 @@ export function fazerLogout() {
 
 /**
  * Protege a página atual contra acessos não autorizados.
- * Deve ser invocado no topo de index.html, formulario.html e planner.html.
+ * Deve ser invocado no topo de index.html e formulario.html.
  */
 export function protegerPagina() {
   if (typeof window === 'undefined') return;

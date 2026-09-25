@@ -139,14 +139,151 @@ body {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+/* ========================================================
+   Estrutura em Shell: Sidebar Fixa + Conteúdo Fluido
+   ======================================================== */
+.app-shell {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  width: 236px;
+  flex-shrink: 0;
+  background-color: var(--bg-card);
+  border-right: 1px solid var(--border-subtle);
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 6px 24px 6px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.16s ease;
+}
+
+.sidebar-link svg {
+  flex-shrink: 0;
+}
+
+.sidebar-link:hover {
+  color: var(--text-primary);
+  background-color: var(--cor-chumbo-suave, rgba(64, 64, 64, 0.06));
+}
+
+.sidebar-link.active {
+  background-color: var(--cor-pessego-suave, rgba(246, 148, 99, 0.15));
+  color: var(--cor-pessego, #F69463);
+  border-color: rgba(246, 148, 99, 0.25);
+  font-weight: 700;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sidebar-footer .header-badge {
+  align-self: flex-start;
+}
+
+.sidebar-footer .header-right-area {
+  justify-content: space-between;
+}
+
+/* O menu de configurações abre para cima e para a direita quando vive na sidebar,
+   evitando que o painel de 290px seja cortado pela borda esquerda/inferior da tela. */
+.app-sidebar .header-settings-dropdown {
+  top: auto;
+  bottom: 100%;
+  left: 0;
+  right: auto;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.app-sidebar .header-settings-dropdown::before {
+  top: auto;
+  bottom: -14px;
+}
+
+.app-main-col {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 860px) {
+  .app-sidebar {
+    width: 76px;
+    padding: 18px 10px;
+  }
+
+  .sidebar-logo .app-title,
+  .sidebar-logo .app-subtitle,
+  .sidebar-link span,
+  .sidebar-footer .header-badge span,
+  .sidebar-footer .user-profile-badge .user-info-text {
+    display: none;
+  }
+
+  .sidebar-logo {
+    justify-content: center;
+    padding: 2px 0 20px 0;
+  }
+
+  .sidebar-link {
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .sidebar-footer .header-right-area {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
 
 /* ========================================================
    Container Principal
    ======================================================== */
 .main-container {
-  max-width: 1140px;
-  margin: 28px auto 60px auto;
-  padding: 0 20px;
+  max-width: 1680px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 28px 40px 60px 40px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -1333,6 +1470,59 @@ select optgroup {
   margin-top: 2px;
   border-top: 1px dashed var(--cor-borda-suave, #f1f3f4);
 }
+
+/* ========================================================
+   Selo de Prazo & Retrabalho (Kanban / Hub de Tramitação)
+   ======================================================== */
+.card-prazo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.prazo-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2.5px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.prazo-pill.prazo-ok {
+  background-color: var(--cor-verde-suave, rgba(102, 141, 88, 0.14));
+  color: #4b6b40;
+}
+
+.prazo-pill.prazo-vencendo {
+  background-color: var(--cor-ambar-suave, rgba(251, 186, 109, 0.20));
+  color: var(--status-pendente-cor, #a26914);
+}
+
+.prazo-pill.prazo-atrasado {
+  background-color: var(--cor-coral-suave, rgba(241, 101, 93, 0.14));
+  color: #c23a32;
+}
+
+.devolucao-pill {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background-color: var(--cor-vinho-suave, rgba(184, 80, 87, 0.12));
+  color: var(--cor-vinho, #B85057);
+  white-space: nowrap;
+  cursor: help;
+}
+
+/* Cores de coluna do Kanban alinhadas à paleta oficial da marca */
+.col-dot.cinza { background-color: var(--cor-cinza, #808184); }
+.col-dot.vinho { background-color: var(--cor-vinho, #B85057); }
+.col-dot.dourado { background-color: var(--cor-ambar, #FBBA6D); }
 
 /* Novos botões compactos com ícone ao lado do texto */
 .btn-card-action {
@@ -3603,6 +3793,22 @@ select option {
   background-color: rgba(128, 129, 132, 0.20) !important;
   color: #d1d5db !important;
   border: 1px solid rgba(128, 129, 132, 0.35);
+}
+
+[data-theme="dark"] .prazo-pill.prazo-ok {
+  color: #86efac !important;
+}
+
+[data-theme="dark"] .prazo-pill.prazo-vencendo {
+  color: #fde047 !important;
+}
+
+[data-theme="dark"] .prazo-pill.prazo-atrasado {
+  color: #fca5a5 !important;
+}
+
+[data-theme="dark"] .devolucao-pill {
+  color: #f3a5aa !important;
 }
 
 /* Modais em Dark Mode (Detalhes & Cancelados) */
