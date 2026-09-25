@@ -140,7 +140,7 @@ body {
   to { transform: rotate(360deg); }
 }
 /* ========================================================
-   Estrutura em Shell: Sidebar Fixa + Conteúdo Fluido
+   Estrutura em Shell: Sidebar Flutuante + Conteúdo Fluido
    ======================================================== */
 .app-shell {
   display: flex;
@@ -149,76 +149,240 @@ body {
 }
 
 .app-sidebar {
-  width: 236px;
+  width: 220px;
   flex-shrink: 0;
-  background-color: var(--bg-card);
-  border-right: 1px solid var(--border-subtle);
-  padding: 22px 16px;
+  align-self: flex-start;
+  position: sticky;
+  top: 16px;
+  height: calc(100vh - 32px);
+  margin: 16px 0 16px 16px;
+  border-radius: 26px;
+  background: linear-gradient(165deg, var(--cor-pessego, #F69463) 0%, var(--cor-vinho, #B85057) 100%);
+  box-shadow: 0 12px 30px -8px rgba(184, 80, 87, 0.45);
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible;
+}
+
+/* Estado colapsado: rail vira um trilho só de ícones */
+.app-sidebar.collapsed {
+  width: 72px;
+}
+
+.sidebar-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px 14px;
+  box-sizing: border-box;
+}
+
+.app-sidebar.collapsed .sidebar-content {
+  padding: 16px 8px;
+  align-items: center;
 }
 
 .sidebar-logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 2px 6px 24px 6px;
+  padding: 2px 4px 24px 4px;
+}
+
+.app-sidebar.collapsed .sidebar-logo {
+  padding: 2px 0 20px 0;
+}
+
+.sidebar-logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+.sidebar-logo-text {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.app-sidebar.collapsed .sidebar-logo-text {
+  display: none;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  flex-grow: 1;
+  width: 100%;
 }
 
 .sidebar-link {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 10px 12px;
-  border-radius: 10px;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 16px;
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.92);
   text-decoration: none;
-  border: 1px solid transparent;
-  transition: all 0.16s ease;
+  background: rgba(255, 255, 255, 0.14);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.16s ease;
+  white-space: nowrap;
+}
+
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
 }
 
 .sidebar-link svg {
   flex-shrink: 0;
 }
 
-.sidebar-link:hover {
-  color: var(--text-primary);
-  background-color: var(--cor-chumbo-suave, rgba(64, 64, 64, 0.06));
+/* Item ativo, expandido: sem pílula própria — o texto repousa sobre o recorte da rail */
+.sidebar-link.active {
+  background: transparent;
+  color: var(--cor-vinho, #B85057);
+  font-weight: 800;
 }
 
-.sidebar-link.active {
-  background-color: var(--cor-pessego-suave, rgba(246, 148, 99, 0.15));
-  color: var(--cor-pessego, #F69463);
-  border-color: rgba(246, 148, 99, 0.25);
-  font-weight: 700;
+.sidebar-link.active:hover {
+  background: transparent;
+}
+
+/* Item ativo, colapsado: círculo branco simples (sem recorte, não há rótulo pra "fundir") */
+.app-sidebar.collapsed .sidebar-link {
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.app-sidebar.collapsed .sidebar-link.active {
+  background: #ffffff;
+  color: var(--cor-vinho, #B85057);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.app-sidebar.collapsed .sidebar-link span {
+  display: none;
+}
+
+/* Recorte côncavo do item ativo (só existe expandido; posicionado via sidebar.js) */
+.sidebar-notch-body,
+.sidebar-notch-ear {
+  position: absolute;
+  z-index: 2;
+  background-color: var(--cor-fundo, #fbfbfb);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.sidebar-notch-ear-top {
+  background: radial-gradient(circle at bottom right, var(--cor-fundo, #fbfbfb) 20px, var(--cor-pessego, #F69463) 20px);
+}
+
+.sidebar-notch-ear-bottom {
+  background: radial-gradient(circle at top right, var(--cor-fundo, #fbfbfb) 20px, var(--cor-pessego, #F69463) 20px);
+}
+
+.app-sidebar.notch-ready .sidebar-notch-body,
+.app-sidebar.notch-ready .sidebar-notch-ear {
+  visibility: visible;
+}
+
+.app-sidebar.collapsed .sidebar-notch-body,
+.app-sidebar.collapsed .sidebar-notch-ear {
+  visibility: hidden !important;
 }
 
 .sidebar-footer {
   margin-top: auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-subtle);
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .sidebar-footer .header-badge {
+  background: transparent;
+  border: none;
+  padding: 0;
   align-self: flex-start;
+  color: #ffffff;
+}
+
+.sidebar-footer .header-badge .pulse-indicator {
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
 }
 
 .sidebar-footer .header-right-area {
   justify-content: space-between;
+}
+
+.sidebar-footer .user-profile-badge {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  min-width: 0;
+}
+
+.sidebar-footer .user-profile-badge strong,
+.sidebar-footer .user-profile-badge small {
+  color: #ffffff;
+}
+
+.sidebar-footer .header-settings-btn {
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  color: #ffffff;
+}
+
+.sidebar-footer .header-settings-wrapper:hover .header-settings-btn,
+.sidebar-footer .header-settings-wrapper.dropdown-fixado .header-settings-btn {
+  background: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.app-sidebar.collapsed .sidebar-footer {
+  align-items: center;
+}
+
+.app-sidebar.collapsed .sidebar-footer .header-badge {
+  align-self: center;
+}
+
+.app-sidebar.collapsed .sidebar-footer .header-badge span:not(.pulse-indicator),
+.app-sidebar.collapsed .sidebar-footer .user-profile-badge .user-info-text {
+  display: none;
+}
+
+.app-sidebar.collapsed .sidebar-footer .header-right-area {
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* O menu de configurações abre para cima e para a direita quando vive na sidebar,
@@ -237,6 +401,30 @@ body {
   bottom: -14px;
 }
 
+/* Botão de expandir/colapsar, flutuando sobre a borda direita da rail */
+.sidebar-toggle-btn {
+  position: absolute;
+  top: 38px;
+  right: -13px;
+  z-index: 4;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--cor-vinho, #B85057);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+  transition: transform 0.16s ease;
+}
+
+.sidebar-toggle-btn:hover {
+  transform: scale(1.08);
+}
+
 .app-main-col {
   flex-grow: 1;
   min-width: 0;
@@ -246,31 +434,36 @@ body {
 
 @media (max-width: 860px) {
   .app-sidebar {
-    width: 76px;
-    padding: 18px 10px;
+    width: 72px;
   }
 
-  .sidebar-logo .app-title,
-  .sidebar-logo .app-subtitle,
-  .sidebar-link span,
-  .sidebar-footer .header-badge span,
-  .sidebar-footer .user-profile-badge .user-info-text {
+  .app-sidebar:not(.collapsed) .sidebar-logo-text,
+  .app-sidebar:not(.collapsed) .sidebar-link span,
+  .app-sidebar:not(.collapsed) .sidebar-notch-body,
+  .app-sidebar:not(.collapsed) .sidebar-notch-ear {
     display: none;
   }
 
-  .sidebar-logo {
-    justify-content: center;
-    padding: 2px 0 20px 0;
-  }
-
-  .sidebar-link {
-    justify-content: center;
-    padding: 12px;
-  }
-
-  .sidebar-footer .header-right-area {
-    flex-direction: column;
+  .app-sidebar:not(.collapsed) .sidebar-content {
+    padding: 16px 8px;
     align-items: center;
+  }
+
+  .app-sidebar:not(.collapsed) .sidebar-link {
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .app-sidebar:not(.collapsed) .sidebar-link.active {
+    background: #ffffff;
+    color: var(--cor-vinho, #B85057);
+  }
+
+  .sidebar-toggle-btn {
+    display: none;
   }
 }
 
