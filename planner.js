@@ -1309,7 +1309,7 @@ protegerPagina();
     const qtdDevolucoes = contarDevolucoes(item, indexOriginal);
 
     return `
-      <div class="planner-card" onclick="window.abrirModalDetalhes('${item.id || indexOriginal}')" title="Clique para ver os detalhes completos">
+      <div class="planner-card" tabindex="0" role="button" aria-label="Documento ${item.codigo}, ${item.titulo}, Status ${item.status}. Pressione Enter para detalhes." onclick="window.abrirModalDetalhes('${item.id || indexOriginal}')" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); window.abrirModalDetalhes('${item.id || indexOriginal}'); }" title="Clique para ver os detalhes completos">
         <div class="card-top-line">
           <span class="card-code">${item.codigo || 'S/ CÓDIGO'}</span>
           <span class="card-rev">Rev. ${item.revisao ?? '0'}</span>

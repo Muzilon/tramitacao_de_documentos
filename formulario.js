@@ -236,13 +236,107 @@ protegerPagina();
     }
   }
 
+  // Estado Offline / Online
+  const faixaOffline = document.getElementById('faixa-offline');
+  const btnSubmit = document.getElementById('btn-submit');
+  
+  function atualizarStatusRede() {
+    if (!navigator.onLine) {
+      if (faixaOffline) faixaOffline.style.display = 'block';
+      if (btnSubmit) btnSubmit.textContent = 'Registro pendente';
+    } else {
+      if (faixaOffline) faixaOffline.style.display = 'none';
+      if (btnSubmit) btnSubmit.textContent = 'Registrar Documento';
+    }
+  }
+
+  window.addEventListener('offline', atualizarStatusRede);
+  window.addEventListener('online', atualizarStatusRede);
+  atualizarStatusRede();
+
+  // Validação
+  if (formulario) {
+    formulario.setAttribute('novalidate', true);
+  }
+
+  const camposObrigatorios = ['titulo', 'codigo', 'data-recebimento', 'status'];
+
+  camposObrigatorios.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    // blur - validação inline
+    el.addEventListener('blur', () => {
+      const parent = el.closest('.pill-input-box');
+      if (!el.value.trim()) {
+        if (parent) parent.classList.add('is-erro');
+      } else {
+        if (parent) parent.classList.remove('is-erro');
+      }
+    });
+
+    // input/change - remoção do erro
+    el.addEventListener('input', () => {
+      const parent = el.closest('.pill-input-box');
+      if (parent) parent.classList.remove('is-erro');
+    });
+    el.addEventListener('change', () => {
+      const parent = el.closest('.pill-input-box');
+      if (parent) parent.classList.remove('is-erro');
+    });
+  });
+
+  function validarFormulario() {
+    let temErro = false;
+    const resumoErrosLista = document.getElementById('resumo-erros-lista');
+    const resumoErros = document.getElementById('resumo-erros');
+    
+    if (resumoErrosLista) resumoErrosLista.innerHTML = '';
+    
+    camposObrigatorios.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (!el.value.trim()) {
+        temErro = true;
+        const parent = el.closest('.pill-input-box');
+        if (parent) parent.classList.add('is-erro');
+        
+        // Obter label ou nome descritivo
+        const label = document.querySelector(`label[for="${id}"]`);
+        const nomeCampo = label ? label.textContent.replace('*', '').trim() : id;
+        
+        if (resumoErrosLista) {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="#${id}">${nomeCampo}</a>`;
+          resumoErrosLista.appendChild(li);
+        }
+      }
+    });
+
+    if (temErro) {
+      if (resumoErros) {
+        resumoErros.style.display = 'block';
+        resumoErros.focus();
+      }
+    } else {
+      if (resumoErros) {
+        resumoErros.style.display = 'none';
+      }
+    }
+    
+    return !temErro;
+  }
+
   // 8. Interceção do envio do formulário
   if (formulario) {
     formulario.addEventListener('submit', async (evento) => {
       evento.preventDefault();
+      
+      if (!validarFormulario()) {
+        return;
+      }
 
       // Botão submit feedback
-      const btnSubmit = document.getElementById('btn-submit');
       let conteudoOriginal = '';
       if (btnSubmit) {
         conteudoOriginal = btnSubmit.innerHTML;
@@ -345,12 +439,22 @@ protegerPagina();
         btnSubmit.disabled = false;
       }
 
-      // Limpeza dos campos do formulário
-      formulario.reset();
-      listaAnexosArquivos = [];
-      renderizarListaAnexos();
-      if (previewDocPrincipal) previewDocPrincipal.textContent = 'Nenhum selecionado';
-      aplicarDadosUsuarioLogado();
+      // Mostra o Toast
+      const msg = navigator.onLine ? "Documento registrado com sucesso!" : "Registro salvo localmente. Será sincronizado quando estiver online.";
+      if (typeof window.mostrarNotificacaoToast === 'function') {
+        window.mostrarNotificacaoToast(msg, 5);
+      } else {
+        alert(msg);
+      }
+
+      // Limpeza dos campos do formulário (com atraso)
+      setTimeout(() => {
+        formulario.reset();
+        listaAnexosArquivos = [];
+        renderizarListaAnexos();
+        if (previewDocPrincipal) previewDocPrincipal.textContent = 'Nenhum selecionado';
+        aplicarDadosUsuarioLogado();
+      }, 5000);
     });
   }
 
