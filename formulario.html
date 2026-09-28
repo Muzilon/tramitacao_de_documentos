@@ -105,6 +105,9 @@
         <main class="main-container main-pill-container">
       <!-- Card do Formulário Estilo Pill / Floating Labels (Imagem de Referência) -->
       <section class="card-formulario-pill">
+        <div id="faixa-offline" class="envio-offline-faixa" role="alert" aria-live="polite">
+          Você está sem conexão. Pode continuar preenchendo; o registro será salvo.
+        </div>
         <!-- Topo com Toggle Capsule e Botão Fechar/Reset -->
         <div class="pill-card-top">
           <div class="capsule-switch">
@@ -117,6 +120,10 @@
         <!-- Título e Subtítulo -->
         <div class="pill-card-title-area">
           <h2 class="pill-card-title">Registro de Documento – DocFlow</h2>
+          <div id="resumo-erros" class="form-resumo-erros" role="alert" aria-live="assertive" tabindex="-1">
+            <strong id="resumo-erros-titulo">Faltam itens para registrar o documento:</strong>
+            <ul id="resumo-erros-lista"></ul>
+          </div>
         </div>
 
         <form id="form-tramitacao">
@@ -126,12 +133,14 @@
               <label for="titulo" class="pill-label">Título do Documento *</label>
               <input type="text" id="titulo" name="titulo" class="pill-input" placeholder="Ex: Manual de Procedimentos" required>
             </div>
+            <div id="erro-titulo" class="campo-erro-msg">Informe o título do documento.</div>
 
             <!-- Código do Documento (Pill) -->
             <div class="pill-input-box">
-              <label for="codigo" class="pill-label">Código do Documento</label>
-              <input type="text" id="codigo" name="codigo" class="pill-input" placeholder="Ex: MR-IND-0001-CTO-001">
+              <label for="codigo" class="pill-label">Código do Documento *</label>
+              <input type="text" id="codigo" name="codigo" class="pill-input" placeholder="Ex: MR-IND-0001-CTO-001" required>
             </div>
+            <div id="erro-codigo" class="campo-erro-msg">Informe o código do documento.</div>
 
             <!-- Tipo de Documento (Pill Select) -->
             <div class="pill-input-box">
@@ -150,8 +159,8 @@
 
             <!-- Status (Pill Select) -->
             <div class="pill-input-box">
-              <label for="status" class="pill-label">Status da Tramitação</label>
-              <select id="status" name="status" class="pill-select">
+              <label for="status" class="pill-label">Status da Tramitação *</label>
+              <select id="status" name="status" class="pill-select" required>
                 <optgroup label="1. Entrada & Triagem">
                   <option value="Recebido" selected>Recebido</option>
                 </optgroup>
@@ -175,12 +184,14 @@
                 </optgroup>
               </select>
             </div>
+            <div id="erro-status" class="campo-erro-msg">Selecione o status da tramitação.</div>
 
             <!-- Data de Recebimento (Pill Date) -->
             <div class="pill-input-box">
               <label for="data-recebimento" class="pill-label">Data de Recebimento *</label>
               <input type="date" id="data-recebimento" name="dataRecebimento" class="pill-input" required>
             </div>
+            <div id="erro-data" class="campo-erro-msg">Informe a data de recebimento.</div>
 
             <!-- Data de Revisão (Pill Date) -->
             <div class="pill-input-box">
@@ -213,23 +224,14 @@
             </div>
 
             <!-- Upload: Documento Principal (Pill) -->
-            <div class="pill-input-box pill-file-box">
-              <div class="file-box-header">
-                <label class="pill-label">Arquivo do Documento Principal *</label>
-                <span id="nome-doc-principal" class="file-name-preview">Nenhum selecionado</span>
-              </div>
-              <div class="file-input-wrapper">
-                <input type="file" id="arquivo-principal" name="arquivoPrincipal" class="hidden-file-input" required>
-                <label for="arquivo-principal" class="btn-file-trigger">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                  </svg>
-                  <span>Procurar Arquivo</span>
-                </label>
-              </div>
+            <div class="pill-input-box pill-file-box pill-dropzone" id="dropzone-principal" tabindex="0" role="button" aria-label="Anexar arquivo principal">
+              <!-- Mantenha o input file oculto, mas mude texto para ser mais claro -->
+              <input type="file" id="arquivo-principal" name="arquivoPrincipal" class="hidden-file-input" required>
+              <span class="file-instructions">Arraste o arquivo aqui ou <span class="fake-btn">Procurar Arquivo</span></span>
+              <span class="file-hint">Um único arquivo. Word, Excel ou PDF.</span>
+              <span id="nome-doc-principal" class="file-selected-name">Nenhum selecionado</span>
             </div>
+            <div id="erro-arquivo" class="campo-erro-msg">Selecione o arquivo do documento principal.</div>
 
             <!-- Upload: Anexos Complementares (Pill) -->
             <div class="pill-input-box pill-file-box">
@@ -259,6 +261,12 @@
               <label for="observacao" class="pill-label">Observações Complementares</label>
               <textarea id="observacao" name="observacao" rows="2" class="pill-textarea" placeholder="Informações adicionais da tramitação..."></textarea>
             </div>
+          </div>
+
+          <!-- Banner de Erro no Rodapé -->
+          <div id="banner-erro-envio" class="envio-erro-banner" role="alert" style="display: none;">
+            <strong>Não foi possível registrar o documento</strong>
+            <p id="msg-erro-envio">Verifique os campos acima ou sua conexão com a internet.</p>
           </div>
 
           <!-- Rodapé do Card com Ação de Registro -->

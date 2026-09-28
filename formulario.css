@@ -12,6 +12,15 @@
   --border-input: #d8dadc;
   --border-focus: var(--cor-pessego, #F69463);
   
+  /* Novos Tokens Fase 2 */
+  --cor-primaria-forte: #B4552A;
+  --cor-primaria-forte-hover: #A84F26;
+  --cor-texto-sobre-primaria: #ffffff;
+  --cor-foco: #B4552A;
+  --cor-erro: #c23a32;
+  --cor-erro-suave: #fef2f2;
+  --cor-pessego-claro: #FBB08A;
+  
   /* Textos */
   --text-primary: var(--cor-chumbo, #404040);
   --text-secondary: var(--cor-cinza, #808184);
@@ -3517,6 +3526,15 @@ select option {
   --text-muted: var(--cor-texto-mutado, #71717a);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+
+  /* Novos Tokens Fase 2 - Dark */
+  --cor-primaria-forte: #B4552A;
+  --cor-primaria-forte-hover: #A84F26;
+  --cor-texto-sobre-primaria: #ffffff;
+  --cor-foco: #F69463;
+  --cor-erro: #fca5a5;
+  --cor-erro-suave: #451a1a;
+  --cor-pessego-claro: #FBB08A;
 }
 
 /* Header & Navegação em Dark */
@@ -5200,4 +5218,114 @@ select option {
 [data-theme="dark"] .auditoria-tipo-pill.tipo-cancelamento {
   background-color: rgba(148, 163, 184, 0.2);
   color: #cbd5e1;
+}
+/* ========================================================
+   Fase 2: Acessibilidade e Feedback Visual (Novos Componentes)
+   ======================================================== */
+
+/* 2. Botões CTA - Atualização de cor primária para forte */
+.pill-btn-submit,
+.btn-primario,
+.btn-stage-submit,
+.btn-salvar-edicao {
+  background-color: var(--cor-primaria-forte);
+}
+
+.pill-btn-submit:hover,
+.btn-primario:hover,
+.btn-stage-submit:hover,
+.btn-salvar-edicao:hover,
+.btn-card-edit:hover,
+.btn-status-quick:hover {
+  background-color: var(--cor-primaria-forte-hover);
+}
+
+[data-theme="dark"] .pill-btn-submit,
+[data-theme="dark"] .btn-primario,
+[data-theme="dark"] .btn-stage-submit,
+[data-theme="dark"] .btn-salvar-edicao {
+  background-color: var(--cor-primaria-forte);
+}
+
+[data-theme="dark"] .pill-btn-submit:hover,
+[data-theme="dark"] .btn-primario:hover,
+[data-theme="dark"] .btn-stage-submit:hover,
+[data-theme="dark"] .btn-salvar-edicao:hover,
+[data-theme="dark"] .btn-card-edit:hover,
+[data-theme="dark"] .btn-status-quick:hover {
+  background-color: var(--cor-primaria-forte-hover);
+}
+
+/* 3. Classes de Erro Inline */
+.campo-erro-msg {
+  color: var(--cor-erro);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  margin-left: 1rem;
+  display: none;
+}
+
+.pill-input-box.is-erro {
+  border: 1.5px solid var(--cor-erro) !important;
+}
+.pill-input-box.is-erro label {
+  color: var(--cor-erro) !important;
+}
+.pill-input-box.is-erro + .campo-erro-msg {
+  display: block;
+}
+
+/* 4. Resumo e Banner de Erro */
+.form-resumo-erros, .envio-erro-banner {
+  background-color: var(--cor-erro-suave);
+  border-left: 4px solid var(--cor-erro);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  color: var(--text-primary);
+  display: none;
+}
+.form-resumo-erros ul {
+  margin: 0.5rem 0 0 1.5rem;
+  padding: 0;
+}
+.form-resumo-erros a {
+  color: var(--cor-erro);
+  text-decoration: underline;
+}
+.envio-offline-faixa {
+  background-color: var(--cor-ambar-suave);
+  color: var(--status-pendente-cor);
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  display: none;
+}
+
+/* 5. Anel de Foco de Marca e Acessibilidade (Focus Visible) */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--cor-foco) !important;
+  outline-offset: 2px;
+}
+.planner-card:focus-visible {
+  outline: 2px solid var(--cor-foco);
+  outline-offset: 2px;
+  transform: translateY(-2px);
+}
+.pill-btn-submit.is-enviando {
+  cursor: wait;
+  opacity: 0.9;
+}
+
+/* 6. Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .spin {
+    animation: spin 1.5s linear infinite !important; /* Exceção: girar mais devagar */
+  }
 }
