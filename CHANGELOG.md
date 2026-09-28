@@ -15,6 +15,12 @@ Formato da data: AAAA-MM-DD.
 - **Onze novas ideias escritas e aprovadas**, aguardando implementação: login com conta Microsoft, controle de validade dos documentos, matriz de treinamentos, notificações por e-mail e Teams, lista mestra de documentos, não conformidades e planos de ação, minha fila, portal do SGI, layout para celular, painel de auditoria e busca global. Veja o índice em [`ideias/README.md`](ideias/README.md).
 - **Tentativa de migração para TypeScript, feita e revertida no mesmo dia.** O Antigravity reescreveu o projeto em React, TypeScript, Vite e Tailwind, mas a nova versão ficou incompleta (sem login, sem formulário de cadastro, com o mesmo problema de segurança de antes). A versão original foi restaurada a partir do histórico do Git. Detalhes em [`doc_projeto/08-historico-tentativa-typescript.md`](doc_projeto/08-historico-tentativa-typescript.md).
 
+## 2026-09-29
+
+- **Migração para TypeScript feita do jeito certo**, seguindo a ideia [Migração para TypeScript, planejada e por etapas](ideias/modelos/modelo_problema/2026-09-29_migracao-typescript-planejada.md): os cinco módulos (`auth-service`, `data-service`, `sidebar`, `formulario`, `planner`) foram convertidos um a um, sem trocar de framework e sem apagar nenhum arquivo original antes de validar. Os `.js` originais continuam na raiz até a validação manual ser concluída.
+- **Endereços de webhook e senhas de teste saíram do código-fonte versionado**, indo para `ts/config.local.ts` (fora do Git). O bloco "Acesso Rápido para Teste" saiu de `login.html`.
+- **Decisão: o código compilado (`ts-dist/`) é versionado no Git**, porque o projeto não tem etapa de build na publicação. Regra registrada em `GEMINI.md`: todo `.ts` editado exige `npm run build` antes do commit.
+
 ## Como manter este arquivo
 
 Toda mudança relevante no sistema — uma ideia implantada, uma migração de tecnologia, uma correção grande — ganha uma linha nova aqui, na data em que aconteceu, com um link para o documento que a descreve em detalhe. Isso vale tanto para o Claude quanto para o Antigravity.

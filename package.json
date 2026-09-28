@@ -1,0 +1,14 @@
+{
+  "name": "docflow",
+  "private": true,
+  "version": "1.0.0",
+  "description": "DocFlow - Tramitacao de documentos do SGI do Grupo Monto",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

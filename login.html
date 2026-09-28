@@ -137,36 +137,6 @@
           </button>
         </form>
 
-        <!-- Contas Rápidas para Demonstração / Teste -->
-        <div class="login-demo-section">
-          <div class="login-demo-header">
-            <span>Acesso Rápido para Teste</span>
-          </div>
-          <div class="login-demo-grid" id="login-demo-grid">
-            <button type="button" class="btn-demo-pill" data-email="eric.machado@monto.com.br" data-senha="monto@123">
-              <span class="demo-avatar">E</span>
-              <div class="demo-info">
-                <strong>Eric Machado</strong>
-                <small>Administrador</small>
-              </div>
-            </button>
-            <button type="button" class="btn-demo-pill" data-email="polyana@monto.com.br" data-senha="monto@123">
-              <span class="demo-avatar">P</span>
-              <div class="demo-info">
-                <strong>Polyana</strong>
-                <small>Custos</small>
-              </div>
-            </button>
-            <button type="button" class="btn-demo-pill" data-email="claudia@monto.com.br" data-senha="monto@123">
-              <span class="demo-avatar">C</span>
-              <div class="demo-info">
-                <strong>Claudia dos Santos</strong>
-                <small>Qualidade</small>
-              </div>
-            </button>
-          </div>
-        </div>
-
         <div class="login-footer">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -180,16 +150,15 @@
     <!-- Script de Autenticação Integrado ao Power Automate e Excel -->
     <script type="module">
       import { 
-        autenticar, 
-        obterUsuarios,
+        autenticar,
         obterUsuarioAtual, 
         estaAutenticado 
-      } from './auth-service.js';
+      } from './ts-dist/auth-service.js';
       import { 
         definirTema, 
         obterTemaAtual,
         buscarDadosDoPowerAutomate 
-      } from './data-service.js';
+      } from './ts-dist/data-service.js';
 
       // Redirecionamento automático se já estiver logado
       const params = new URLSearchParams(window.location.search);
@@ -230,59 +199,8 @@
         });
       }
 
-      // Vincula cliques nas pílulas de teste
-      function vincularEventosDemoPills() {
-        const botoesDemo = document.querySelectorAll('.btn-demo-pill');
-        botoesDemo.forEach(btn => {
-          btn.onclick = () => {
-            const email = btn.getAttribute('data-email');
-            const senha = btn.getAttribute('data-senha');
-            const inputEmail = document.getElementById('input-email');
-            if (inputEmail && inputSenha) {
-              inputEmail.value = email;
-              inputSenha.value = senha;
-              esconderErro();
-              btn.classList.add('selected');
-              setTimeout(() => btn.classList.remove('selected'), 600);
-            }
-          };
-        });
-      }
-
-      // Atualiza pílulas com os usuários reais vindos do Excel
-      function atualizarDemoPillsComUsuariosExcel() {
-        const container = document.getElementById('login-demo-grid');
-        if (!container) return;
-
-        const usuarios = obterUsuarios().filter(u => u.status?.toLowerCase() === 'ativo');
-        if (!usuarios || usuarios.length === 0) return;
-
-        // Limita a até 3 ou 4 usuários para exibição limpa
-        const exibidos = usuarios.slice(0, 4);
-        container.innerHTML = exibidos.map(u => {
-          const inicial = (u.nome || u.email || 'U').charAt(0).toUpperCase();
-          return `
-            <button type="button" class="btn-demo-pill" data-email="${u.email}" data-senha="${u.senha || 'monto@123'}">
-              <span class="demo-avatar">${inicial}</span>
-              <div class="demo-info">
-                <strong>${u.nome}</strong>
-                <small>${u.perfil || u.area || 'Geral'}</small>
-              </div>
-            </button>
-          `;
-        }).join('');
-
-        vincularEventosDemoPills();
-      }
-
-      // Inicializa eventos locais das pílulas padrão
-      vincularEventosDemoPills();
-
       // Sincroniza usuários da nuvem em segundo plano ao abrir o login
       buscarDadosDoPowerAutomate()
-        .then(() => {
-          atualizarDemoPillsComUsuariosExcel();
-        })
         .catch(err => {
           console.warn("DocFlow: Sincronização em segundo plano no login:", err);
         });
@@ -340,7 +258,6 @@
           if (!resultado.sucesso && resultado.erro && resultado.erro.includes('não cadastrado')) {
             try {
               await buscarDadosDoPowerAutomate();
-              atualizarDemoPillsComUsuariosExcel();
               resultado = autenticar(email, senha);
             } catch (errSync) {
               console.warn("Falha ao sincronizar usuários no login:", errSync);

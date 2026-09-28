@@ -3,7 +3,7 @@
 | Campo | Valor |
 |-------|-------|
 | Tipo | Resolução de problema |
-| Status | Rascunho |
+| Status | Aprovada |
 | Prioridade | Média |
 | Data | 2026-09-29 |
 | Autor | Claude |

@@ -3,6 +3,13 @@
 _arquivo_tentativa_typescript/node_modules
 _arquivo_tentativa_typescript/dist
 
+# Migração atual para TypeScript (sem framework)
+# ts-dist/ É VERSIONADA DE PROPÓSITO: o projeto não tem etapa de build na
+# publicação, então o código compilado precisa estar no repositório. Sempre
+# rode "npm run build" antes de commitar uma mudança em ts/*.ts — veja GEMINI.md.
+node_modules
+ts/config.local.ts
+
 # Logs
 logs
 *.log

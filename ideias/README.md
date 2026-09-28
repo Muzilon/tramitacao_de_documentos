@@ -112,6 +112,6 @@ Ao mover, mantenha o nome do arquivo e a pasta de tipo. Por exemplo, `ideias/mod
 | 2026-09-28 | Design | [Layout para celular](modelos/modelo_design/2026-09-28_layout-mobile.md) | Média | Rascunho |
 | 2026-09-28 | Função | [Painel de auditoria](modelos/modelo_funcao/2026-09-28_painel-auditoria.md) | Baixa | Rascunho |
 | 2026-09-28 | Função | [Busca global](modelos/modelo_funcao/2026-09-28_busca-global.md) | Baixa | Rascunho |
-| 2026-09-29 | Problema | [Migração para TypeScript, planejada e por etapas](modelos/modelo_problema/2026-09-29_migracao-typescript-planejada.md) | Média | Rascunho |
+| 2026-09-29 | Problema | [Migração para TypeScript, planejada e por etapas](modelos/modelo_problema/2026-09-29_migracao-typescript-planejada.md) | Média | Em desenvolvimento |
 
 As três primeiras ideias (integridade da sincronização, feedback de envio e acessibilidade, painel de indicadores do SGI) já foram implantadas e estão listadas em [`ideias_implantadas/README.md`](../ideias_implantadas/README.md).

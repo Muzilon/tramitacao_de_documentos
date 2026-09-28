@@ -18,6 +18,14 @@ Estas ações **nunca** são feitas por conta própria, mesmo com autonomia tota
 - **Apagar ou substituir de uma vez arquivos que já funcionam em produção.** Uma migração de tecnologia é feita por etapas comparáveis com o comportamento atual, nunca por uma reescrita completa seguida de substituição em um único commit. Se uma reescrita paralela for necessária, ela fica numa pasta separada (por exemplo `v2/`) até ser validada tela por tela contra o sistema atual, e só então substitui a raiz do projeto.
 - **Deixar de corrigir um problema de segurança já registrado** ao reescrever o código que o contém. Se um arquivo com um problema conhecido (por exemplo, uma URL de webhook exposta) for reescrito por qualquer motivo, a correção desse problema faz parte do trabalho, não fica para depois.
 
+## Build do TypeScript
+
+O projeto não tem etapa de build na publicação: os arquivos HTML carregam diretamente o código compilado em `ts-dist/`, que **é versionado no Git** (decisão registrada em `doc_projeto/08-historico-tentativa-typescript.md` e no `CHANGELOG.md`, 2026-09-29).
+
+- **Toda vez que um arquivo em `ts/*.ts` for editado, rode `npm run build` antes de commitar.** Um commit que muda `ts/` sem atualizar `ts-dist/` deixa o site publicado rodando código antigo, sem nenhum aviso.
+- Nunca edite os arquivos dentro de `ts-dist/` diretamente — eles são gerados pelo `tsc` e qualquer edição manual se perde no próximo build.
+- `ts/config.local.ts` guarda segredos (endereços de webhook, senhas) e nunca é commitado. Quem for rodar o projeto localmente pela primeira vez copia `ts/config.local.example.ts` para `ts/config.local.ts` e preenche os valores reais.
+
 ## Documentação obrigatória
 
 - **Toda mudança relevante ganha uma linha no [`CHANGELOG.md`](CHANGELOG.md)** da raiz do projeto, na data em que foi feita, com um link para o documento ou a ideia correspondente.
