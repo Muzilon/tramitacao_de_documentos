@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --docflow-orange: #f97316;
+    --docflow-green: #22c55e;
+  }
+}
