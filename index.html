@@ -1,4 +1,4 @@
-﻿�<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8">
@@ -22,7 +22,8 @@
     <link rel="stylesheet" href="formulario.css">
     <!-- Biblioteca SheetJS para leitura e manipulação de arquivos Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script type="module" src="planner.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="planner.js"></script>
     <script type="module">
       import { inicializarSidebar } from './sidebar.js';
       inicializarSidebar();
@@ -75,11 +76,6 @@
             </div>
 
             <div class="header-right-area">
-              <button class="btn-secundario" onclick="window.abrirModalIndicadores()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
-                Indicadores SGI
-              </button>
-
               <!-- Perfil do Usuário Logado -->
               <div class="user-profile-badge" id="header-user-badge"></div>
 
@@ -195,6 +191,10 @@
             <span>Cancelados</span>
             <span class="badge-count" id="count-cancelados">0</span>
           </button>
+          <button class="btn-secundario" style="padding: 7px 14px; font-size: 13px;" onclick="window.abrirModalIndicadores()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+            <span>Indicadores SGI</span>
+          </button>
           <button id="btn-novo-doc" class="btn-primario" style="padding: 7px 14px; font-size: 13px;" onclick="window.location.href='formulario.html'">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -205,7 +205,7 @@
         </div>
       </section>
 
-      <!-- Quadro Kanban (5 Colunas � cores alinhadas à paleta oficial da marca) -->
+      <!-- Quadro Kanban (5 Colunas — cores alinhadas à paleta oficial da marca) -->
       <section class="planner-board">
         <!-- Coluna 1: Recebido -->
         <div class="planner-col" id="col-recebido" style="border-top: 3px solid var(--cor-cinza);">
@@ -297,11 +297,11 @@
               </svg>
               <span>Editar</span>
             </button>
-            <button type="button" id="btn-fechar-modal" class="pill-btn-close" title="Fechar">�S"</button>
+            <button type="button" id="btn-fechar-modal" class="pill-btn-close" title="Fechar">✕</button>
           </div>
         </div>
 
-        <!-- ================= MODO DE VISUALIZA�!ÒO ================= -->
+        <!-- ================= MODO DE VISUALIZAÇÃO ================= -->
         <div id="modal-view-mode">
           <!-- Título do Documento -->
           <div class="modal-title-area">
@@ -346,9 +346,9 @@
                 <div class="modal-info-item modal-item-full modal-anexos-box">
                   <span class="modal-info-label">Arquivos & Pastas Vinculadas</span>
 
-                  <!-- Alerta quando NÒO houver arquivos nem links -->
+                  <!-- Alerta quando NÃO houver arquivos nem links -->
                   <div id="modal-alerta-sem-anexos" class="alerta-sem-anexo" style="display: none;">
-                    <div class="alerta-icone">�a�️</div>
+                    <div class="alerta-icone">⚠️</div>
                     <div class="alerta-texto">
                       <strong>Nenhum arquivo anexado ou link disponível</strong>
                       <p>Você pode colar o link direto da pasta abaixo ou selecionar arquivos para criar a pasta automaticamente no SharePoint.</p>
@@ -358,11 +358,11 @@
                   <!-- Resumo dos arquivos existentes -->
                   <div id="modal-files-summary" class="modal-files-summary">
                     <div style="display:flex; align-items:center; gap:8px;">
-                      <span>�x</span>
+                      <span>📄</span>
                       <span id="modal-arquivo-principal" class="modal-file-name">Documento Principal: -</span>
                     </div>
                     <div id="modal-anexos-complementares-info" style="display:flex; align-items:center; gap:8px; margin-top: 6px;">
-                      <span>�x�</span>
+                      <span>📁</span>
                       <span id="modal-qtd-anexos" class="modal-file-name">Anexos Complementares: 0 arquivos</span>
                     </div>
                   </div>
@@ -493,7 +493,7 @@
                 </svg>
               </a>
               <button type="button" id="btn-toggle-link-manual" class="btn-editar-modal" title="Editar ou inserir link da pasta manualmente" style="padding: 9px 12px;">
-                �S�️ Link
+                ✏️ Link
               </button>
             </div>
 
@@ -508,7 +508,7 @@
           </div>
         </div>
 
-        <!-- ================= MODO DE EDI�!ÒO ================= -->
+        <!-- ================= MODO DE EDIÇÃO ================= -->
         <div id="modal-edit-mode" style="display: none;">
           <form id="form-edicao-modal">
             <div class="form-edicao-modal-grid">
@@ -628,7 +628,7 @@
             <span>Documentos Cancelados</span>
             <span class="badge-count" id="modal-cancelados-count" style="background:#ef4444; color:#fff; font-size:11px; padding:2px 8px; border-radius:12px; margin-left:6px;">0</span>
           </h3>
-          <button type="button" class="btn-fechar-modal" id="btn-fechar-cancelados" title="Fechar">�S"</button>
+          <button type="button" class="btn-fechar-modal" id="btn-fechar-cancelados" title="Fechar">✕</button>
         </div>
         <div style="padding: 10px 20px 0 20px; font-size: 12px; color: #64748b;">
           Estes documentos foram cancelados e não aparecem no quadro ativo. Você pode reativá-los a qualquer momento.
@@ -692,7 +692,7 @@
             <span id="modal-auditoria-codigo" class="card-code">DOC-0001</span>
             <span id="modal-auditoria-revisao" class="card-rev" style="background:#f1f5f9; padding:3px 8px; border-radius:4px; font-weight:600;">Rev. 0</span>
           </div>
-          <button type="button" class="pill-btn-close" id="btn-fechar-auditoria" title="Fechar">�S"</button>
+          <button type="button" class="pill-btn-close" id="btn-fechar-auditoria" title="Fechar">✕</button>
         </div>
 
         <div class="auditoria-header-content">
