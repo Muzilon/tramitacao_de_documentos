@@ -350,10 +350,10 @@ Quando o sistema pede menos movimento:
 
 ## Resultado da implantação
 
-<!-- Preencher ao mover para ideias_implantadas/. -->
-
-- **Data da implantação:**
+- **Data da implantação:** 28 de Setembro de 2026
 - **Validado por:** Eric
-- **O que foi feito:**
-- **Diferenças em relação à proposta:**
+- **O que foi feito:** Foram ajustados os tokens de cor do projeto (`#B4552A` substituiu tons mais claros para melhor legibilidade nos botões); validação nativa HTML desabilitada a favor de uma validação inline customizada não intrusiva com painel flutuante de erros; inserido anel de foco personalizado respeitando `tabindex` no Kanban. Interface resiliente contra falhas de internet adicionada no topo do DOM e botão inteligente de status ("Registrando...", "Registro pendente").
+- **Diferenças em relação à proposta:** O código segue exatamente os tokens definidos na arquitetura e dispensa componentes flutuantes por soluções inline mais amigáveis e não destrutivas.
 - **Observações e pendências:**
+  1. Testar o feedback visual de contraste com usuários com dificuldade de visão.
+  2. Testar o fluxo de "Registro pendente" desligando o Wi-Fi.
