@@ -28,8 +28,109 @@ export const URL_WEBHOOK_ADD_HISTORICO = "https://defaultadd9956403f342bcb569ac9
 const CHAVE_STORAGE = 'tramitacoes';
 const CHAVE_ULTIMA_SINC = 'docflow_ultima_sincronizacao';
 const CHAVE_ORIGEM = 'docflow_origem_dados';
-const CHAVE_MODIFICACOES_LOCAIS = 'docflow_modificacoes_locais';
 export const CHAVE_HISTORICO = 'docflow_historico_alteracoes';
+export const CHAVE_FILA_ENVIOS = 'docflow_fila_envios';
+
+if (typeof localStorage !== 'undefined') {
+  localStorage.removeItem('docflow_modificacoes_locais');
+}
+
+export function obterFilaEnvios() {
+  try {
+    if (typeof localStorage === 'undefined') return [];
+    const raw = localStorage.getItem(CHAVE_FILA_ENVIOS);
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) { return []; }
+}
+
+export function salvarFilaEnvios(lista) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(CHAVE_FILA_ENVIOS, JSON.stringify(lista));
+  }
+}
+
+export function enfileirarEnvio(tipo, idDocumento, payload) {
+  const fila = obterFilaEnvios();
+  fila.push({
+    idFila: `PEND-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+    tipo: tipo, // 'CADASTRO', 'ATUALIZACAO', 'HISTORICO', 'ANEXOS'
+    idDocumento: idDocumento,
+    dados: payload,
+    tentativas: 0,
+    ultimaTentativa: null,
+    ultimoErro: null,
+    status: 'pendente' // 'pendente', 'falhou'
+  });
+  salvarFilaEnvios(fila);
+  processarFilaEnvios(); // dispara tentativa assim que enfileira
+}
+
+export async function processarFilaEnvios() {
+  const fila = obterFilaEnvios();
+  let alterado = false;
+
+  for (let i = 0; i < fila.length; i++) {
+    const item = fila[i];
+    if (item.status !== 'pendente') continue;
+
+    if (item.tentativas >= 5) {
+      item.status = 'falhou';
+      alterado = true;
+      if (typeof window !== 'undefined' && window.mostrarNotificacao) {
+        window.mostrarNotificacao(`Falha ao enviar ${item.tipo} após 5 tentativas`, 'erro');
+      } else {
+        console.error(`Falha ao enviar ${item.tipo} após 5 tentativas`);
+      }
+      continue;
+    }
+
+    let url = null;
+    if (item.tipo === 'CADASTRO') url = URL_WEBHOOK_POST;
+    else if (item.tipo === 'HISTORICO') url = URL_WEBHOOK_ADD_HISTORICO;
+    else if (item.tipo === 'ATUALIZACAO' && URL_WEBHOOK_UPDATE_STATUS) url = URL_WEBHOOK_UPDATE_STATUS;
+
+    if (!url) {
+      item.status = 'falhou';
+      item.ultimoErro = 'URL não configurada';
+      alterado = true;
+      continue;
+    }
+
+    try {
+      item.tentativas++;
+      item.ultimaTentativa = new Date().toISOString();
+      const resposta = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item.dados)
+      });
+      
+      if (resposta.ok) {
+        // Sucesso, remover da fila
+        fila.splice(i, 1);
+        i--;
+        alterado = true;
+      } else {
+        item.ultimoErro = `HTTP ${resposta.status}`;
+        alterado = true;
+        break; // Para o processamento se houver falha de rede ou servidor
+      }
+    } catch (e) {
+      item.ultimoErro = e.message;
+      alterado = true;
+      break; // Para no primeiro erro de rede
+    }
+  }
+
+  if (alterado) {
+    salvarFilaEnvios(fila);
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', processarFilaEnvios);
+  setInterval(processarFilaEnvios, 60000);
+}
 
 const ouvintesAtualizacao = [];
 
@@ -165,12 +266,8 @@ export function adicionarHistoricoAlteracao({
   salvarTodoHistorico(todoHistorico);
 
   // Se houver webhook dedicado para gravar linha de histórico no Excel pelo Power Automate, envia em segundo plano APENAS quando solicitado explicitamente por ação do usuário
-  if (enviarNuvem && URL_WEBHOOK_ADD_HISTORICO && URL_WEBHOOK_ADD_HISTORICO.trim() !== '') {
-    fetch(URL_WEBHOOK_ADD_HISTORICO, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(novoRegistro)
-    }).catch(err => console.warn("DocFlow: Erro ao enviar histórico para o Power Automate:", err));
+  if (enviarNuvem) {
+    enfileirarEnvio('HISTORICO', novoRegistro.idDocumento, novoRegistro);
   }
 
   return novoRegistro;
@@ -201,14 +298,63 @@ export function inicializarHistoricoSeNecessario(item) {
   }
 }
 
-export function obterModificacoesLocais() {
-  try {
-    if (typeof localStorage === 'undefined') return {};
-    const raw = localStorage.getItem(CHAVE_MODIFICACOES_LOCAIS);
-    return raw ? JSON.parse(raw) : {};
-  } catch (_) {
-    return {};
-  }
+/**
+ * Procura documento por ID (função auxiliar genérica)
+ */
+export function encontrarDocumentoPorId(lista, id) {
+  if (!id) return null;
+  const idLimpo = String(id).trim().toLowerCase();
+  return lista.find(item => {
+    return (item.id && String(item.id).trim().toLowerCase() === idLimpo) || 
+           (item.codigo && String(item.codigo).trim().toLowerCase() === idLimpo);
+  });
+}
+
+/**
+ * Mescla os dados remotos e locais
+ */
+export function mesclarTramitacoes(listaLocal, listaRemota) {
+  const mapaFinal = new Map();
+  const filaEnvios = obterFilaEnvios();
+
+  const pegarTimestamp = (dataStr) => {
+    if (!dataStr) return 0;
+    const t = new Date(dataStr).getTime();
+    return isNaN(t) ? 0 : t;
+  };
+
+  // 1. Inserir remotos no mapa
+  listaRemota.forEach(item => {
+    if (!item.id) return;
+    mapaFinal.set(item.id, { ...item });
+  });
+
+  // 2. Avaliar os locais
+  listaLocal.forEach(itemLocal => {
+    if (!itemLocal.id) return;
+
+    if (mapaFinal.has(itemLocal.id)) {
+      // Existe em ambos, compara dataModificacao
+      const itemRemoto = mapaFinal.get(itemLocal.id);
+      const tempoLocal = pegarTimestamp(itemLocal.dataModificacao);
+      const tempoRemoto = pegarTimestamp(itemRemoto.dataModificacao);
+      
+      if (tempoLocal > tempoRemoto) {
+        mapaFinal.set(itemLocal.id, { ...itemLocal });
+      }
+    } else {
+      // Existe só no local
+      // Verifica se há um CADASTRO pendente na fila para este documento
+      const temCadastroPendente = filaEnvios.some(
+        f => f.tipo === 'CADASTRO' && f.idDocumento === itemLocal.id
+      );
+      if (temCadastroPendente) {
+        mapaFinal.set(itemLocal.id, { ...itemLocal });
+      }
+    }
+  });
+
+  return Array.from(mapaFinal.values());
 }
 
 /**
@@ -296,26 +442,6 @@ export function salvarTramitacoes(lista, origem = 'local') {
       localStorage.setItem(CHAVE_STORAGE, JSON.stringify(listaLimpa));
       localStorage.setItem(CHAVE_ULTIMA_SINC, new Date().toISOString());
       localStorage.setItem(CHAVE_ORIGEM, origem);
-
-      // Se a alteração foi feita no próprio sistema pelo usuário (não veio da sincronização bruta da nuvem)
-      if (origem !== 'Power Automate (SharePoint)') {
-        const modificacoes = obterModificacoesLocais();
-        listaLimpa.forEach(item => {
-          const chave = (item.codigo || '').trim().toLowerCase() || (item.titulo || '').trim().toLowerCase();
-          if (chave) {
-            modificacoes[chave] = {
-              status: item.status,
-              linkAnexo: item.linkAnexo,
-              nomePasta: item.nomePasta,
-              nomeArquivoPrincipal: item.nomeArquivoPrincipal,
-              qtdAnexos: item.qtdAnexos,
-              observacao: item.observacao,
-              timestamp: Date.now()
-            };
-          }
-        });
-        localStorage.setItem(CHAVE_MODIFICACOES_LOCAIS, JSON.stringify(modificacoes));
-      }
     }
     notificarAtualizacao(listaLimpa);
   } catch (e) {
@@ -531,9 +657,11 @@ export async function importarArquivoExcel(arquivo) {
         const wsPrincipal = workbook.Sheets[sheetPrincipalName];
         const linhasBrutas = window.XLSX.utils.sheet_to_json(wsPrincipal, { defval: '' });
 
-        const tramitacoesValidas = desduplicarTramitacoes(
+        const tramitacoesRemotas = desduplicarTramitacoes(
           linhasBrutas.map(normalizarItemExcel).filter(Boolean)
         );
+
+        const tramitacoesValidas = mesclarTramitacoes(obterTramitacoes(), tramitacoesRemotas);
 
         if (tramitacoesValidas.length === 0) {
           throw new Error("Nenhum documento válido encontrado na planilha. Verifique se as colunas estão preenchidas.");
@@ -752,26 +880,11 @@ export async function buscarDadosDoPowerAutomate() {
       }
     }
     
-    const modificacoes = obterModificacoesLocais();
-
-    const tramitacoesValidas = desduplicarTramitacoes(
+    const tramitacoesRemotas = desduplicarTramitacoes(
       listaLinhas.map(normalizarItemExcel).filter(Boolean)
-    ).map(itemRemoto => {
-      const chave = (itemRemoto.codigo || '').trim().toLowerCase() || (itemRemoto.titulo || '').trim().toLowerCase();
-      const mod = modificacoes[chave];
-      if (!mod) return itemRemoto;
+    );
 
-      // Preserva a decisão do usuário (ex: Cancelado ou novo status movido pelo usuário), links e arquivos
-      return {
-        ...itemRemoto,
-        status: mod.status || itemRemoto.status,
-        linkAnexo: (mod.linkAnexo && mod.linkAnexo.trim() !== '') ? mod.linkAnexo : (itemRemoto.linkAnexo || ''),
-        nomePasta: mod.nomePasta || itemRemoto.nomePasta || '',
-        nomeArquivoPrincipal: mod.nomeArquivoPrincipal || itemRemoto.nomeArquivoPrincipal || '',
-        qtdAnexos: mod.qtdAnexos !== undefined ? mod.qtdAnexos : itemRemoto.qtdAnexos,
-        observacao: mod.observacao || itemRemoto.observacao || ''
-      };
-    });
+    const tramitacoesValidas = mesclarTramitacoes(obterTramitacoes(), tramitacoesRemotas);
 
     if (tramitacoesValidas.length > 0) {
       salvarTramitacoes(tramitacoesValidas, 'Power Automate (SharePoint)');
