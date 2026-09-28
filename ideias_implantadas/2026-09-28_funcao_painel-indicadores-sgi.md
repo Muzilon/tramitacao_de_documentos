@@ -253,10 +253,8 @@ Um novo módulo **Indicadores SGI**, com duas visões:
 
 ## Resultado da implantação
 
-<!-- Preencher ao mover para ideias_implantadas/. -->
-
-- **Data da implantação:**
+- **Data da implantação:** 28 de Setembro de 2026
 - **Validado por:** Eric
-- **O que foi feito:**
-- **Diferenças em relação à proposta:**
-- **Observações e pendências:**
+- **O que foi feito:** Um modal responsivo de Indicadores SGI foi criado (`#modal-indicadores`) na tela principal, contendo os 3 KPIs essenciais (Lead Time, Gargalo Atual e Taxa de Devolução) alimentados pela base histórica real em cache (`obterTodoHistorico()`). Implementou-se os gráficos Chart.js em colunas responsivas mostrando tempo médio por fase e documentação por área (com destroy nas re-renderizações).
+- **Diferenças em relação à proposta:** O código foi integrado na `index.html` em vez do `planner.html` (uma vez que as views foram mescladas anteriormente).
+- **Observações e pendências:** Os cálculos de estatística estão prontos para evolução com métricas avançadas no Power BI posteriormente se desejado pelo SGI.
