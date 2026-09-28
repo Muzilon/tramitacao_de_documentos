@@ -5416,3 +5416,545 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     grid-template-columns: 1fr;
   }
 }
+
+/* ========================================================
+   Refinamento UX/UI: Barra de Filtros, Modal Body & Ações
+   ======================================================== */
+
+/* 1. Barra de Filtros & Filter Group */
+.planner-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+.filter-group select {
+  height: 38px;
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-input);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.filter-group select:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(246, 148, 99, 0.15);
+}
+
+/* Alinhamento harmônico e preciso de todos os botões do grupo de filtros */
+.filter-group button,
+.filter-group .btn-cancelados-pill,
+.filter-group .btn-secundario,
+.filter-group .btn-primario {
+  height: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px !important;
+  font-size: 13px !important;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter-group button svg,
+.filter-group .btn-cancelados-pill svg,
+.filter-group .btn-secundario svg,
+.filter-group .btn-primario svg {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter-group button > span,
+.filter-group .btn-cancelados-pill > span,
+.filter-group .btn-secundario > span,
+.filter-group .btn-primario > span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.filter-group .btn-cancelados-pill .badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  margin-left: 2px;
+}
+
+.filter-group #btn-novo-doc.btn-primario:hover svg {
+  transform: rotate(90deg);
+}
+
+/* 2. Modal de Detalhes: Layout Espaçoso (.modal-body, .modal-col-right / .modal-content-split, .modal-right-pane) */
+.modal-body,
+.modal-content-split {
+  display: flex !important;
+  gap: 32px !important;
+  align-items: stretch;
+  padding: 20px 28px 24px 28px;
+  max-height: 68vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.modal-left-pane,
+.modal-col-left {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-col-right,
+.modal-right-pane {
+  flex: 0 0 340px !important;
+  min-width: 320px;
+  max-width: 360px;
+  background-color: var(--bg-card, #f8fafc);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+/* Garante que o container da timeline não esprema a seção de Atualizar Etapa */
+.modal-col-right .timeline-river-flow,
+.modal-right-pane .timeline-river-flow {
+  flex: 1 1 auto;
+  min-height: 140px;
+  max-height: 280px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 12px 10px 14px;
+  margin-bottom: 0;
+}
+
+.modal-col-right .timeline-river-flow::-webkit-scrollbar,
+.modal-right-pane .timeline-river-flow::-webkit-scrollbar {
+  width: 5px;
+}
+
+.modal-col-right .timeline-river-flow::-webkit-scrollbar-track,
+.modal-right-pane .timeline-river-flow::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-col-right .timeline-river-flow::-webkit-scrollbar-thumb,
+.modal-right-pane .timeline-river-flow::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* Painel de Controle de Atualização de Etapa espaçoso e ergonômico */
+.modal-col-right .timeline-stage-control,
+.modal-right-pane .timeline-stage-control {
+  border-top: 1px solid var(--border-subtle, #e2e8f0);
+  padding-top: 16px;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timeline-stage-control .stage-control-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0;
+}
+
+.timeline-stage-control .stage-control-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timeline-stage-control .stage-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.timeline-stage-control .stage-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary, #64748b);
+}
+
+.timeline-stage-control .stage-select,
+.timeline-stage-control .stage-input-destino {
+  height: 38px;
+  min-height: 38px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0 12px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border-input, #cbd5e1);
+  background-color: var(--bg-card, #ffffff);
+  color: var(--text-primary, #0f172a);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.timeline-stage-control .stage-input-observacao {
+  font-family: inherit;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--border-input, #cbd5e1);
+  background-color: var(--bg-card, #ffffff);
+  color: var(--text-primary, #0f172a);
+  outline: none;
+  resize: vertical;
+  min-height: 52px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.timeline-stage-control .stage-select:focus,
+.timeline-stage-control .stage-input-destino:focus,
+.timeline-stage-control .stage-input-observacao:focus {
+  border-color: var(--border-focus, #F69463);
+  box-shadow: 0 0 0 3px rgba(246, 148, 99, 0.15);
+}
+
+.timeline-stage-control .btn-stage-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 3. Rodapé do Modal: Polimento de .modal-actions-left e .modal-actions-right */
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 28px;
+  background-color: var(--bg-card, #ffffff);
+  border-top: 1px solid var(--border-subtle, #e2e8f0);
+  flex-wrap: wrap;
+}
+
+.modal-actions-left,
+.modal-footer > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.modal-actions-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.modal-actions-left .btn-sharepoint-modal,
+.modal-footer .btn-sharepoint-modal {
+  height: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--cor-verde, #668D58) 0%, #537546 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(102, 141, 88, 0.25);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.modal-actions-left .btn-sharepoint-modal:hover,
+.modal-footer .btn-sharepoint-modal:hover {
+  background: linear-gradient(135deg, #597c4c 0%, #46653a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 141, 88, 0.35);
+  color: #ffffff;
+}
+
+.modal-actions-left .btn-sharepoint-modal:active,
+.modal-footer .btn-sharepoint-modal:active {
+  transform: translateY(0);
+}
+
+.modal-actions-left #btn-toggle-link-manual,
+.modal-actions-left .btn-editar-modal {
+  height: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px !important;
+  border-radius: var(--radius-md, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border-subtle, #cbd5e1);
+  background-color: var(--bg-card, #ffffff);
+  color: var(--text-primary, #334155);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.modal-actions-left #btn-toggle-link-manual:hover,
+.modal-actions-left .btn-editar-modal:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.modal-actions-right button,
+.modal-actions-right .btn-primario,
+.modal-actions-right .btn-secundario {
+  height: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px !important;
+  border-radius: var(--radius-md, 8px);
+  font-size: 12.5px !important;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.modal-actions-right button:hover,
+.modal-actions-right .btn-primario:hover,
+.modal-actions-right .btn-secundario:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.modal-actions-right button:active,
+.modal-actions-right .btn-primario:active,
+.modal-actions-right .btn-secundario:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.modal-actions-right .btn-secundario {
+  background-color: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-subtle, #cbd5e1);
+  color: var(--text-primary, #334155);
+}
+
+.modal-actions-right .btn-secundario:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+/* Responsividade Adaptativa */
+@media (max-width: 900px) {
+  .modal-body,
+  .modal-content-split {
+    flex-direction: column !important;
+    gap: 24px !important;
+    padding: 16px 20px;
+  }
+
+  .modal-col-right,
+  .modal-right-pane {
+    flex: 1 1 auto !important;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .planner-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .filter-group {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 18px;
+  }
+
+  .modal-actions-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .modal-actions-right {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .modal-actions-right button,
+  .modal-actions-right .btn-primario,
+  .modal-actions-right .btn-secundario {
+    flex: 1 1 auto;
+  }
+}
+
+/* Suporte Completo ao Modo Noturno (Dark Theme) */
+[data-theme="dark"] .filter-group .btn-secundario {
+  background-color: #1f1f26;
+  border-color: #383844;
+  color: #e4e4e7;
+}
+
+[data-theme="dark"] .filter-group .btn-secundario:hover {
+  background-color: #282832;
+  border-color: #52525e;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .modal-col-right,
+[data-theme="dark"] .modal-right-pane {
+  background-color: #16161b !important;
+  border-color: #282832 !important;
+}
+
+[data-theme="dark"] .modal-col-right .timeline-river-flow::-webkit-scrollbar-thumb,
+[data-theme="dark"] .modal-right-pane .timeline-river-flow::-webkit-scrollbar-thumb {
+  background: #383844;
+}
+
+[data-theme="dark"] .timeline-stage-control {
+  border-top-color: #282832 !important;
+}
+
+[data-theme="dark"] .timeline-stage-control .stage-select,
+[data-theme="dark"] .timeline-stage-control .stage-input-destino,
+[data-theme="dark"] .timeline-stage-control .stage-input-observacao {
+  background-color: #1a1a20 !important;
+  border-color: #2e2e38 !important;
+  color: #f3f4f6 !important;
+}
+
+[data-theme="dark"] .timeline-stage-control .stage-select:focus,
+[data-theme="dark"] .timeline-stage-control .stage-input-destino:focus,
+[data-theme="dark"] .timeline-stage-control .stage-input-observacao:focus {
+  border-color: var(--border-focus, #F69463) !important;
+  box-shadow: 0 0 0 3px rgba(246, 148, 99, 0.25) !important;
+}
+
+[data-theme="dark"] .modal-footer {
+  background-color: #16161b !important;
+  border-top-color: #282832 !important;
+}
+
+[data-theme="dark"] .modal-actions-left #btn-toggle-link-manual,
+[data-theme="dark"] .modal-actions-left .btn-editar-modal {
+  background-color: #1f1f26 !important;
+  border-color: #383844 !important;
+  color: #e4e4e7 !important;
+}
+
+[data-theme="dark"] .modal-actions-left #btn-toggle-link-manual:hover,
+[data-theme="dark"] .modal-actions-left .btn-editar-modal:hover {
+  background-color: #282832 !important;
+  border-color: #52525e !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .modal-actions-right .btn-secundario {
+  background-color: #1f1f26 !important;
+  border-color: #383844 !important;
+  color: #e4e4e7 !important;
+}
+
+[data-theme="dark"] .modal-actions-right .btn-secundario:hover {
+  background-color: #282832 !important;
+  border-color: #52525e !important;
+  color: #ffffff !important;
+}
+
