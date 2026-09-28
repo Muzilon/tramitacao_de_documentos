@@ -221,7 +221,8 @@ export function desduplicarTramitacoes(lista) {
 
   lista.forEach((item, idx) => {
     if (!item) return;
-    const chave = (item.codigo || '').trim().toLowerCase() || (item.titulo || '').trim().toLowerCase();
+    const idItem = (item.id || '').trim();
+    const chave = idItem || (item.codigo || '').trim().toLowerCase() || (item.titulo || '').trim().toLowerCase();
     if (!chave) return;
 
     const idDoc = item.id || gerarIdDocumento(item, idx);
@@ -397,6 +398,7 @@ export function normalizarItemExcel(linha) {
   const nomePasta = getCampo('Nome da Pasta', 'nomePasta', 'Pasta');
   const nomeArquivoPrincipal = getCampo('Documento Principal', 'nomeArquivoPrincipal', 'Arquivo Principal', 'Arquivo');
   const qtdAnexos = getCampo('Qtd Anexos', 'qtdAnexos', 'Anexos', 'Quantidade Anexos');
+  const dataModificacao = getCampo('Data Modificação', 'Data Modificacao', 'dataModificacao', 'Data de Modificação', 'DataModificacao');
 
   // Ignora linhas totalmente vazias do Excel
   if (!titulo && !codigo && !remetente) {
@@ -422,7 +424,8 @@ export function normalizarItemExcel(linha) {
     linkAnexo: String(linkAnexo || '').trim(),
     nomePasta: String(nomePasta || '').trim(),
     nomeArquivoPrincipal: String(nomeArquivoPrincipal || '').trim(),
-    qtdAnexos: qtdAnexos ? Number(qtdAnexos) || 0 : 0
+    qtdAnexos: qtdAnexos ? Number(qtdAnexos) || 0 : 0,
+    dataModificacao: dataModificacao ? String(dataModificacao).trim() : ''
   };
 }
 

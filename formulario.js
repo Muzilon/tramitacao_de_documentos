@@ -223,6 +223,8 @@ protegerPagina();
         "Documento Principal": arquivosPayload.documentoPrincipal,
         "anexosComplementares": arquivosPayload.anexosComplementares,
         "Anexos Complementares": arquivosPayload.anexosComplementares,
+        "ID": dados.id,
+        "Data Modificação": dados.dataModificacao,
         ...dados
       };
 
@@ -298,7 +300,9 @@ protegerPagina();
       const linkAnexoDireto = `${baseUrlSharePoint}/${encodeURIComponent(nomePastaSanitizada)}`;
 
       // Criação do objeto com os dados preenchidos
+      const idGerado = `DOC-${crypto.randomUUID()}`;
       const novaTramitacao = {
+        id: idGerado,
         titulo: tituloValor,
         codigo: document.getElementById('codigo').value,
         tipoDocumento: document.getElementById('tipo-documento').value,
@@ -313,7 +317,8 @@ protegerPagina();
         nomePasta: nomePastaSanitizada,
         nomeArquivoPrincipal: docPrincipalPayload ? docPrincipalPayload.nome : '',
         qtdAnexos: anexosPayload.length,
-        linkAnexo: linkAnexoDireto
+        linkAnexo: linkAnexoDireto,
+        dataModificacao: new Date().toISOString()
       };
 
       // Gravação na base oficial (Array + Cache Local)
@@ -322,7 +327,7 @@ protegerPagina();
 
       // Registra evento inicial no histórico de alterações (persiste e envia ao Power Automate)
       adicionarHistoricoAlteracao({
-        idDocumento: novaTramitacao.codigo ? `DOC-${novaTramitacao.codigo}` : '',
+        idDocumento: idGerado,
         codigo: novaTramitacao.codigo,
         status: novaTramitacao.status || 'Recebido',
         statusAnterior: '',

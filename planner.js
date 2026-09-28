@@ -86,6 +86,31 @@ protegerPagina();
     return 'revisao';
   }
 
+  function encontrarDocumentoPorId(id) {
+    if (!id) return null;
+    const idStr = String(id).trim();
+    const doc = tramitacoes.find(t => 
+      (t.id && String(t.id).trim() === idStr) ||
+      (t.codigo && `DOC-${t.codigo}` === idStr)
+    );
+    if (!doc) {
+      console.warn(`DocFlow: Documento com ID "${idStr}" não encontrado na base atual.`);
+      if (typeof mostrarNotificacaoToast === 'function') {
+        mostrarNotificacaoToast({ tipo: 'aviso', titulo: 'Documento não encontrado', mensagem: 'Este documento pode ter sido removido ou atualizado. Recarregue a página.', tempoSegundos: 5 });
+      }
+    }
+    return doc || null;
+  }
+
+  function obterIndexPorId(id) {
+    if (!id) return -1;
+    const idStr = String(id).trim();
+    return tramitacoes.findIndex(t => 
+      (t.id && String(t.id).trim() === idStr) ||
+      (t.codigo && `DOC-${t.codigo}` === idStr)
+    );
+  }
+
   // Formata data YYYY-MM-DD para DD/MM/YYYY
   function formatarData(dataStr) {
     if (!dataStr) return '-';
@@ -249,7 +274,7 @@ protegerPagina();
   const auditoriaTimelineContainer = document.getElementById('auditoria-timeline-container');
 
   let itemDetalheAtualIndex = null;
-  let itemDetalheAtualChave = null;
+  let itemDetalheAtualId = null;
 
   function formatarDataHora(isoOuStr) {
     if (!isoOuStr) return '-';
@@ -268,11 +293,8 @@ protegerPagina();
   }
 
   function obterItemAtual() {
-    if (itemDetalheAtualChave) {
-      const enc = tramitacoes.find(t => 
-        (t.codigo && t.codigo.trim().toLowerCase() === itemDetalheAtualChave) ||
-        (t.titulo && t.titulo.trim().toLowerCase() === itemDetalheAtualChave)
-      );
+    if (itemDetalheAtualId) {
+      const enc = encontrarDocumentoPorId(itemDetalheAtualId);
       if (enc) return enc;
     }
     if (itemDetalheAtualIndex !== null && tramitacoes[itemDetalheAtualIndex]) {
@@ -550,7 +572,7 @@ protegerPagina();
         });
       }
 
-      itemDetalheAtualChave = (item.codigo || '').trim().toLowerCase() || (item.titulo || '').trim().toLowerCase();
+      itemDetalheAtualId = (item.codigo || '').trim().toLowerCase() || (item.titulo || '').trim().toLowerCase();
 
       salvarTramitacoes(tramitacoes, 'Edição de Dados');
       renderizarQuadro();
@@ -559,8 +581,8 @@ protegerPagina();
       modalViewMode.style.display = 'block';
 
       const novoIndex = tramitacoes.findIndex(t => 
-        (t.codigo && t.codigo.trim().toLowerCase() === itemDetalheAtualChave) ||
-        (t.titulo && t.titulo.trim().toLowerCase() === itemDetalheAtualChave)
+        (t.codigo && t.codigo.trim().toLowerCase() === itemDetalheAtualId) ||
+        (t.titulo && t.titulo.trim().toLowerCase() === itemDetalheAtualId)
       );
       window.abrirModalDetalhes(novoIndex !== -1 ? novoIndex : itemDetalheAtualIndex);
       mostrarDialogoAlerta({ titulo: 'Sucesso', mensagem: 'Dados do documento atualizados com sucesso!' });
@@ -604,8 +626,8 @@ protegerPagina();
       alternarPainelLinkManual(false);
 
       const novoIndex = tramitacoes.findIndex(t => 
-        (t.codigo && t.codigo.trim().toLowerCase() === itemDetalheAtualChave) ||
-        (t.titulo && t.titulo.trim().toLowerCase() === itemDetalheAtualChave)
+        (t.codigo && t.codigo.trim().toLowerCase() === itemDetalheAtualId) ||
+        (t.titulo && t.titulo.trim().toLowerCase() === itemDetalheAtualId)
       );
       window.abrirModalDetalhes(novoIndex !== -1 ? novoIndex : itemDetalheAtualIndex);
       mostrarDialogoAlerta({ titulo: 'Sucesso', mensagem: 'Link da pasta do SharePoint atualizado com sucesso!' });
@@ -691,8 +713,8 @@ protegerPagina();
         if (modalPreviewQtdAnexos) modalPreviewQtdAnexos.textContent = '0 arquivos';
 
         const novoIndex = tramitacoes.findIndex(t => 
-          (t.codigo && t.codigo.trim().toLowerCase() === itemDetalheAtualChave) ||
-          (t.titulo && t.titulo.trim().toLowerCase() === itemDetalheAtualChave)
+          (t.codigo && t.codigo.trim().toLowerCase() === itemDetalheAtualId) ||
+          (t.titulo && t.titulo.trim().toLowerCase() === itemDetalheAtualId)
         );
         window.abrirModalDetalhes(novoIndex !== -1 ? novoIndex : itemDetalheAtualIndex);
       } catch (err) {
@@ -749,12 +771,20 @@ protegerPagina();
     }
   });
 
-  window.abrirModalDetalhes = function(indexOriginal) {
-    itemDetalheAtualIndex = indexOriginal;
-    const item = tramitacoes[indexOriginal];
+  window.abrirModalDetalhes = function(idOuIndex) {
+    let indexOriginal;
+    let item;
+    if (typeof idOuIndex === 'string') {
+      indexOriginal = obterIndexPorId(idOuIndex);
+      item = tramitacoes[indexOriginal];
+    } else {
+      indexOriginal = idOuIndex;
+      item = tramitacoes[indexOriginal];
+    }
     if (!item || !modalDetalhes) return;
 
-    itemDetalheAtualChave = (item.codigo || '').trim().toLowerCase() || (item.titulo || '').trim().toLowerCase();
+    itemDetalheAtualId = item.id || gerarIdDocumento(item, indexOriginal);
+    itemDetalheAtualIndex = indexOriginal;
 
     // Garante que o modal abre no modo de visualização
     if (modalViewMode) modalViewMode.style.display = 'block';
@@ -854,53 +884,53 @@ protegerPagina();
 
       if (colAtual === 'cancelado') {
         btns = `
-          <button class="btn-primario" style="background:#2563eb; font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Recebido'); window.abrirModalDetalhes(${indexOriginal});">
+          <button class="btn-primario" style="background:#2563eb; font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Recebido'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
             ↺ Reativar Documento
           </button>
         `;
       } else {
         if (colAtual === 'aprovado') {
           btns = `
-            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Em revisão da qualidade'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Em revisão da qualidade'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
               ↺ Reabrir Revisão
             </button>
           `;
         } else if (colAtual === 'recebido') {
           btns = `
-            <button class="btn-primario" style="background: var(--cor-laranja, #F39C12); font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Em revisão da qualidade'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-primario" style="background: var(--cor-laranja, #F39C12); font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Em revisão da qualidade'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
               🔍 Iniciar Revisão
             </button>
-            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Devolvido para área para revisão'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Devolvido para área para revisão'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
               ↩ Devolver à Área
             </button>
           `;
         } else if (colAtual === 'revisao') {
           btns = `
-            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Devolvido para área para revisão'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Devolvido para área para revisão'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
               ↩ Devolver à Área
             </button>
-            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Para aprovação da área solicitante'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Para aprovação da área solicitante'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
               📋 P/ Aprovação
             </button>
-            <button class="btn-primario" style="background:#10b981; font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Aprovado'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-primario" style="background:#10b981; font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Aprovado'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
               ✓ Aprovar
             </button>
           `;
         } else if (colAtual === 'devolvido') {
           btns = `
-            <button class="btn-primario" style="background: var(--cor-laranja, #F39C12); font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Em revisão da qualidade'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-primario" style="background: var(--cor-laranja, #F39C12); font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Em revisão da qualidade'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
               🔍 Retomar Revisão
             </button>
-            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Para aprovação da área solicitante'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Para aprovação da área solicitante'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
               📋 P/ Aprovação
             </button>
           `;
         } else if (colAtual === 'aprovacao') {
           btns = `
-            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Devolvido para correção'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-secundario" style="font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Devolvido para correção'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
               ↩ Devolver p/ Correção
             </button>
-            <button class="btn-primario" style="background:#10b981; font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus(${indexOriginal}, 'Aprovado'); window.abrirModalDetalhes(${indexOriginal});">
+            <button class="btn-primario" style="background:#10b981; font-size: 12px; padding: 8px 16px;" onclick="window.moverStatus('${item.id || indexOriginal}', 'Aprovado'); window.abrirModalDetalhes('${item.id || indexOriginal}');">
               ✓ Aprovar
             </button>
           `;
@@ -908,7 +938,7 @@ protegerPagina();
 
         // Botão Cancelar (Exclusão lógica do quadro ativo)
         btns += `
-          <button class="btn-secundario" style="color: var(--cor-coral, #F1655D); border-color: rgba(241,101,93,0.35); font-size: 12px; padding: 8px 14px;" onclick="window.solicitarCancelamentoDocumento(${indexOriginal});">
+          <button class="btn-secundario" style="color: var(--cor-coral, #F1655D); border-color: rgba(241,101,93,0.35); font-size: 12px; padding: 8px 14px;" onclick="window.solicitarCancelamentoDocumento('${item.id || indexOriginal}');">
             🚫 Cancelar
           </button>
         `;
@@ -1179,13 +1209,24 @@ protegerPagina();
   }
 
   // Função para mover de status
-  window.moverStatus = function(indexNoArrayOriginal, novoStatus) {
-    if (tramitacoes[indexNoArrayOriginal]) {
-      const item = tramitacoes[indexNoArrayOriginal];
-      const statusAnt = item.status;
-      item.status = novoStatus;
+  window.moverStatus = function(idOuIndex, novoStatus) {
+    let indexNoArrayOriginal;
+    if (typeof idOuIndex === 'string') {
+      indexNoArrayOriginal = obterIndexPorId(idOuIndex);
+    } else {
+      indexNoArrayOriginal = idOuIndex;
+    }
 
-      const usuarioLogado = (typeof window !== 'undefined' && window.AuthService && typeof window.AuthService.obterUsuarioLogado === 'function')
+    if (indexNoArrayOriginal < 0 || !tramitacoes[indexNoArrayOriginal]) {
+      console.warn('DocFlow: Documento não encontrado para mover status.');
+      return;
+    }
+
+    const item = tramitacoes[indexNoArrayOriginal];
+    const statusAnt = item.status;
+    item.status = novoStatus;
+
+    const usuarioLogado = (typeof window !== 'undefined' && window.AuthService && typeof window.AuthService.obterUsuarioLogado === 'function')
         ? (window.AuthService.obterUsuarioLogado()?.nome || item.remetente || 'Usuário Atual')
         : (obterUsuarioAtual()?.nome || item.remetente || 'Usuário Atual');
 
@@ -1211,11 +1252,15 @@ protegerPagina();
       if (modalDetalhes && modalDetalhes.style.display === 'flex' && itemDetalheAtualIndex === indexNoArrayOriginal) {
         renderizarRiverTimeline(item, indexNoArrayOriginal);
       }
-    }
   };
 
-  // Solicita cancelamento com caixa de diálogo retangular centralizada e toast temporário de desfazer (4 segundos)
-  window.solicitarCancelamentoDocumento = function(indexOriginal) {
+  window.solicitarCancelamentoDocumento = function(idOuIndex) {
+    let indexOriginal;
+    if (typeof idOuIndex === 'string') {
+      indexOriginal = obterIndexPorId(idOuIndex);
+    } else {
+      indexOriginal = idOuIndex;
+    }
     const item = tramitacoes[indexOriginal];
     if (!item) return;
 
@@ -1227,14 +1272,14 @@ protegerPagina();
       perigo: true,
       onConfirmar: () => {
         const statusAnterior = item.status || 'Em Revisão';
-        window.moverStatus(indexOriginal, 'Cancelado');
+        window.moverStatus(idOuIndex, 'Cancelado');
         window.fecharModal();
 
         mostrarToastDesfazer({
           mensagem: 'Documento cancelado com sucesso.',
           tempoSegundos: 4,
           onDesfazer: () => {
-            window.moverStatus(indexOriginal, statusAnterior);
+            window.moverStatus(idOuIndex, statusAnterior);
           }
         });
       }
@@ -1259,7 +1304,7 @@ protegerPagina();
     const qtdDevolucoes = contarDevolucoes(item, indexOriginal);
 
     return `
-      <div class="planner-card" onclick="window.abrirModalDetalhes(${indexOriginal})" title="Clique para ver os detalhes completos">
+      <div class="planner-card" onclick="window.abrirModalDetalhes('${item.id || indexOriginal}')" title="Clique para ver os detalhes completos">
         <div class="card-top-line">
           <span class="card-code">${item.codigo || 'S/ CÓDIGO'}</span>
           <span class="card-rev">Rev. ${item.revisao ?? '0'}</span>
@@ -1290,14 +1335,14 @@ protegerPagina();
         </div>
 
         <div class="card-actions-quick">
-          <button class="btn-card-action btn-card-edit" onclick="event.stopPropagation(); window.abrirModalEdicao(${indexOriginal});" title="Editar dados do documento">
+          <button class="btn-card-action btn-card-edit" onclick="event.stopPropagation(); window.abrirModalEdicao('${item.id || indexOriginal}');" title="Editar dados do documento">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
               <path d="m15 5 4 4"></path>
             </svg>
             <span>Editar</span>
           </button>
-          <button class="btn-card-action btn-card-view" onclick="event.stopPropagation(); window.abrirModalDetalhes(${indexOriginal});" title="Exibir detalhes completos">
+          <button class="btn-card-action btn-card-view" onclick="event.stopPropagation(); window.abrirModalDetalhes('${item.id || indexOriginal}');" title="Exibir detalhes completos">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
@@ -1306,7 +1351,7 @@ protegerPagina();
             </svg>
             <span>Detalhes</span>
           </button>
-          <button class="btn-card-action btn-card-auditoria" onclick="event.stopPropagation(); window.abrirModalAuditoria(${indexOriginal});" title="Ver histórico de alterações">
+          <button class="btn-card-action btn-card-auditoria" onclick="event.stopPropagation(); window.abrirModalAuditoria('${item.id || indexOriginal}');" title="Ver histórico de alterações">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
@@ -1322,7 +1367,7 @@ protegerPagina();
   function criarCartaoCancelado(item, indexOriginal) {
     const dataExibicao = item.dataRevisao ? formatarData(item.dataRevisao) : formatarData(item.dataRecebimento);
     return `
-      <div class="planner-card card-cancelado" onclick="window.abrirModalDetalhes(${indexOriginal})" title="Clique para ver os detalhes completos">
+      <div class="planner-card card-cancelado" onclick="window.abrirModalDetalhes('${item.id || indexOriginal}')" title="Clique para ver os detalhes completos">
         <div class="card-top-line">
           <span class="card-code" style="color: var(--cor-coral); font-weight: 700;">${item.codigo || 'S/ CÓDIGO'}</span>
           <span class="badge badge-cancelado" style="font-size: 10px; padding: 2px 8px;">Cancelado</span>
@@ -1341,14 +1386,14 @@ protegerPagina();
         </div>
 
         <div class="card-actions-quick" style="justify-content: flex-end; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--cor-coral-suave);">
-          <button class="btn-card-action" style="color: var(--cor-verde); border-color: rgba(102, 141, 88, 0.4); background-color: var(--cor-verde-suave);" onclick="event.stopPropagation(); window.moverStatus(${indexOriginal}, 'Em Revisão');" title="Reativar documento">
+          <button class="btn-card-action" style="color: var(--cor-verde); border-color: rgba(102, 141, 88, 0.4); background-color: var(--cor-verde-suave);" onclick="event.stopPropagation(); window.moverStatus('${item.id || indexOriginal}', 'Em Revisão');" title="Reativar documento">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="1 4 1 10 7 10"></polyline>
               <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
             </svg>
             <span>Reativar</span>
           </button>
-          <button class="btn-card-action btn-card-view" onclick="event.stopPropagation(); window.abrirModalDetalhes(${indexOriginal});" title="Exibir detalhes">
+          <button class="btn-card-action btn-card-view" onclick="event.stopPropagation(); window.abrirModalDetalhes('${item.id || indexOriginal}');" title="Exibir detalhes">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
@@ -1357,7 +1402,7 @@ protegerPagina();
             </svg>
             <span>Detalhes</span>
           </button>
-          <button class="btn-card-action btn-card-auditoria" onclick="event.stopPropagation(); window.abrirModalAuditoria(${indexOriginal});" title="Ver histórico de alterações">
+          <button class="btn-card-action btn-card-auditoria" onclick="event.stopPropagation(); window.abrirModalAuditoria('${item.id || indexOriginal}');" title="Ver histórico de alterações">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
@@ -1432,42 +1477,42 @@ protegerPagina();
     if (cardsRecebido) {
       cardsRecebido.innerHTML = colRecebidoItens.length === 0 
         ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhum documento recebido</div>'
-        : colRecebidoItens.map(item => criarCartao(item, item._idx)).join('');
+        : colRecebidoItens.map(item => criarCartao(item, item.id || item._idx)).join('');
     }
 
     // Renderiza Coluna 2: Em Revisão
     if (cardsRevisao) {
       cardsRevisao.innerHTML = colRevisaoItens.length === 0 
         ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhum documento em revisão</div>'
-        : colRevisaoItens.map(item => criarCartao(item, item._idx)).join('');
+        : colRevisaoItens.map(item => criarCartao(item, item.id || item._idx)).join('');
     }
 
     // Renderiza Coluna 3: Devolvido à Área
     if (cardsDevolvido) {
       cardsDevolvido.innerHTML = colDevolvidoItens.length === 0 
         ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhum documento devolvido</div>'
-        : colDevolvidoItens.map(item => criarCartao(item, item._idx)).join('');
+        : colDevolvidoItens.map(item => criarCartao(item, item.id || item._idx)).join('');
     }
 
     // Renderiza Coluna 4: Em Aprovação
     if (cardsAprovacao) {
       cardsAprovacao.innerHTML = colAprovacaoItens.length === 0 
         ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhum documento em aprovação</div>'
-        : colAprovacaoItens.map(item => criarCartao(item, item._idx)).join('');
+        : colAprovacaoItens.map(item => criarCartao(item, item.id || item._idx)).join('');
     }
 
     // Renderiza Coluna 5: Aprovado
     if (cardsAprovado) {
       cardsAprovado.innerHTML = colAprovadoItens.length === 0 
         ? '<div style="text-align: center; padding: 24px 10px; color: #94a3b8; font-size: 13px;">Nenhum documento aprovado</div>'
-        : colAprovadoItens.map(item => criarCartao(item, item._idx)).join('');
+        : colAprovadoItens.map(item => criarCartao(item, item.id || item._idx)).join('');
     }
 
     // Renderiza Coluna Flutuante de Cancelados
     if (cardsCanceladosContainer) {
       cardsCanceladosContainer.innerHTML = colCanceladosItens.length === 0
         ? '<div style="text-align: center; padding: 40px 10px; color: #94a3b8; font-size: 13px;"><span style="font-size: 24px; display:block; margin-bottom: 8px;">🎉</span>Nenhum documento cancelado.</div>'
-        : colCanceladosItens.map(item => criarCartaoCancelado(item, item._idx)).join('');
+        : colCanceladosItens.map(item => criarCartaoCancelado(item, item.id || item._idx)).join('');
     }
   }
 
@@ -1479,7 +1524,13 @@ protegerPagina();
   }
   window.fecharModalAuditoria = fecharModalAuditoria;
 
-  window.abrirModalAuditoria = function(indexOriginal) {
+  window.abrirModalAuditoria = function(idOuIndex) {
+    let indexOriginal;
+    if (typeof idOuIndex === 'string') {
+      indexOriginal = obterIndexPorId(idOuIndex);
+    } else {
+      indexOriginal = idOuIndex;
+    }
     const item = tramitacoes[indexOriginal];
     if (!item || !modalAuditoria) return;
 
