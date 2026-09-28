@@ -835,34 +835,23 @@ export async function buscarDadosDoPowerAutomate() {
     if (payload && typeof payload === 'object') {
       const listaHistBruta = payload.historico || payload.historicoAlteracoes || payload['Histórico de Alterações'] || payload['Historico_Alteracoes'] || payload['Historico_Eventos'] || payload.eventos;
       if (Array.isArray(listaHistBruta) && listaHistBruta.length > 0) {
-        const histNormalizado = listaHistBruta
-          .map(normalizarItemHistorico)
-          .filter(h => {
-            if (!h) return false;
-            const cod = (h.codigo || '').trim().toLowerCase();
-            const idDoc = (h.idDocumento || '').trim().toLowerCase();
-            if (cod === 'monto-001' || idDoc === 'doc-monto-001') return false;
-            return Boolean(h.status && (cod || idDoc));
-          });
-
-        if (histNormalizado.length > 0) {
-          // Mantém o histórico limpo com o último status de cada documento
+        const historicoRemoto = listaHistBruta.map(normalizarItemHistorico).filter(Boolean);
+        const historicoLocal = obterTodoHistorico();
+        
+        if (historicoRemoto.length > 0) {
           const mapaHist = new Map();
-          histNormalizado.forEach(h => {
-            let chaveDoc = (h.codigo || '').trim().toLowerCase();
-            if (!chaveDoc) {
-              const idLimpo = (h.idDocumento || '').trim().toLowerCase().replace(/^doc-/, '');
-              chaveDoc = (idLimpo.includes('suprimento') || idLimpo.includes('muen') || idLimpo.includes('muem')) ? 'suprimentos' : (idLimpo || 'suprimentos');
-            }
-            const existente = mapaHist.get(chaveDoc);
-            if (!existente || new Date(h.dataHora || 0) >= new Date(existente.dataHora || 0)) {
-              mapaHist.set(chaveDoc, h);
-            }
+          // Coloca todos os locais no mapa
+          historicoLocal.forEach(h => {
+            if (h && h.id) mapaHist.set(h.id, h);
           });
-
-          const historicoConsolidado = Array.from(mapaHist.values());
-          salvarTodoHistorico(historicoConsolidado);
-          totalHistoricoCarregado = historicoConsolidado.length;
+          // Sobrescreve/adiciona os remotos (assim IDs iguais não duplicam)
+          historicoRemoto.forEach(h => {
+            if (h && h.id) mapaHist.set(h.id, h);
+          });
+          const historicoMesclado = Array.from(mapaHist.values());
+          // Salva a mescla (sem descartar nada)
+          salvarTodoHistorico(historicoMesclado);
+          totalHistoricoCarregado = historicoRemoto.length;
         }
       }
     }
@@ -1272,40 +1261,34 @@ export function arquivoParaBase64(arquivo) {
  * Retorna o link da pasta gerado.
  */
 export async function enviarArquivosParaSharePoint(dados, docPrincipalPayload, anexosPayload = []) {
-  if (!URL_WEBHOOK_POST || URL_WEBHOOK_POST.includes("COLE_AQUI")) {
-    throw new Error("Webhook de envio do Power Automate não configurado.");
+  const webhookUrl = URL_WEBHOOK_UPDATE_STATUS || URL_WEBHOOK_POST;
+  if (!webhookUrl || webhookUrl.includes("COLE_AQUI")) {
+    throw new Error("Webhook de atualização do Power Automate não configurado.");
   }
 
   const nomePastaSanitizada = sanitizarNomePasta(dados.nomePasta || dados.titulo);
   const baseUrlSharePoint = "https://grupomonto.sharepoint.com/sites/SGIMontoIndustrial/Repositrio%20%20Tramitao%20de%20Documentos/Documentos";
   const linkAnexoDireto = `${baseUrlSharePoint}/${encodeURIComponent(nomePastaSanitizada)}`;
 
+  const arquivosPayload = [];
+  if (docPrincipalPayload) arquivosPayload.push(docPrincipalPayload);
+  if (anexosPayload && anexosPayload.length > 0) {
+    arquivosPayload.push(...anexosPayload);
+  }
+
   const payload = {
-    ...dados,
-    "Título": dados.titulo,
-    "Código do documento": dados.codigo || '',
-    "Status": dados.status || 'Em Revisão',
-    "Data de Recebimento": dados.dataRecebimento || '',
-    "Tipo de Documento": dados.tipoDocumento || '',
-    "Data de Revisão": dados.dataRevisao || '',
-    "Remetente": dados.remetente || '',
-    "Área": dados.area || '',
-    "Disciplina": dados.disciplina || '',
-    "Nº de Revisão": dados.revisao || '0',
-    "N° de Revisão": dados.revisao || '0',
-    "Observação": dados.observacao || '',
-    "LinkAnexo": linkAnexoDireto,
-    "Link Anexo": linkAnexoDireto,
-    "linkAnexo": linkAnexoDireto,
-    "nomePasta": nomePastaSanitizada,
-    "Nome da Pasta": nomePastaSanitizada,
-    "documentoPrincipal": docPrincipalPayload || null,
-    "Documento Principal": docPrincipalPayload || null,
-    "anexosComplementares": anexosPayload || [],
-    "Anexos Complementares": anexosPayload || []
+    id: dados.id,
+    codigo: dados.codigo,
+    dataModificacao: new Date().toISOString(),
+    campos: {
+       qtdAnexos: (dados.qtdAnexos || 0) + arquivosPayload.length,
+       linkAnexo: linkAnexoDireto,
+       nomePasta: nomePastaSanitizada
+    },
+    anexos: arquivosPayload
   };
 
-  const resposta = await fetch(URL_WEBHOOK_POST, {
+  const resposta = await fetch(webhookUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

@@ -11,7 +11,8 @@ import {
   inicializarMenuConfiguracoes,
   buscarDadosDoPowerAutomate,
   URL_WEBHOOK_POST,
-  adicionarHistoricoAlteracao
+  adicionarHistoricoAlteracao,
+  enfileirarEnvio
 } from './data-service.js';
 
 protegerPagina();
@@ -228,21 +229,10 @@ protegerPagina();
         ...dados
       };
 
-      const resposta = await fetch(URL_WEBHOOK_POWER_AUTOMATE, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+      enfileirarEnvio('CADASTRO', dados.id || `DOC-${dados.codigo}`, payload);
 
-      if (resposta.ok) {
-        console.log("Registro e arquivos enviados ao SharePoint com sucesso!");
-      } else {
-        console.error("Erro ao enviar para o Power Automate:", resposta.status, resposta.statusText);
-      }
     } catch (erro) {
-      console.error("Falha na ligação com o Power Automate:", erro);
+      console.error("Falha ao enfileirar para o Power Automate:", erro);
     }
   }
 

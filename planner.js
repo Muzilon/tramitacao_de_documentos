@@ -16,7 +16,8 @@ import {
   obterHistoricoDocumento,
   adicionarHistoricoAlteracao,
   inicializarHistoricoSeNecessario,
-  gerarIdDocumento
+  gerarIdDocumento,
+  enfileirarEnvio
 } from './data-service.js';
 
 protegerPagina();
@@ -165,23 +166,17 @@ protegerPagina();
   }
 
   // Envia atualização de status para o Power Automate (apenas se houver fluxo específico de UpdateRow configurado)
-  async function sincronizarComPowerAutomate(item) {
-    if (!URL_WEBHOOK_POWER_AUTOMATE || URL_WEBHOOK_POWER_AUTOMATE.trim() === '' || URL_WEBHOOK_POWER_AUTOMATE.includes("COLE_AQUI")) {
-      // Nenhum fluxo de Update configurado; não chama o fluxo de adicionar linha para não duplicar registros no Excel!
-      return;
-    }
+  async function sincronizarComPowerAutomate(itemAtualizado, payload = null) {
     try {
-      const payload = {
-        "codigo": item.codigo,
-        "titulo": item.titulo,
-        "status": item.status
+      const payloadContrato = {
+        id: itemAtualizado.id || `DOC-${itemAtualizado.codigo}`,
+        codigo: itemAtualizado.codigo,
+        dataModificacao: itemAtualizado.dataModificacao || new Date().toISOString(),
+        campos: payload || { status: itemAtualizado.status },
+        autor: obterUsuarioAtual()
       };
 
-      await fetch(URL_WEBHOOK_POWER_AUTOMATE, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      enfileirarEnvio('ATUALIZACAO', payloadContrato.id, payloadContrato);
     } catch (e) {
       console.error("Falha ao sincronizar atualização com Power Automate:", e);
     }
@@ -702,6 +697,16 @@ protegerPagina();
           item.nomeArquivoPrincipal = filesAnexos[0].name;
         }
         item.qtdAnexos = (item.qtdAnexos || 0) + anexosPayload.length;
+
+        adicionarHistoricoAlteracao({
+          idDocumento: item.id || `DOC-${item.codigo}`,
+          codigo: item.codigo,
+          status: item.status,
+          statusAnterior: item.status,
+          tipoAcao: 'ANEXO',
+          observacao: `Adicionado(s) ${(docPrincipalPayload ? 1 : 0) + anexosPayload.length} novo(s) anexo(s).`,
+          enviarNuvem: true
+        });
 
         salvarTramitacoes(tramitacoes, 'Anexos SharePoint Salvos');
         renderizarQuadro();
