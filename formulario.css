@@ -5329,3 +5329,90 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     animation: spin 1.5s linear infinite !important; /* Exceção: girar mais devagar */
   }
 }
+
+/* ==========================================================================
+   PAINEL DE INDICADORES SGI (MODAL)
+   ========================================================================== */
+
+.modal-indicadores-wrapper {
+  max-width: 900px; /* Modal mais largo para comportar gráficos */
+}
+
+.modal-indicadores-body {
+  padding: 1.5rem;
+  background-color: var(--bg-primary);
+}
+
+/* Grade de KPIs (3 colunas) */
+.indicadores-kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.indicador-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.indicador-valor {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--cor-primaria-forte);
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.indicador-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.indicador-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Grade de Gráficos (2 colunas) */
+.indicadores-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.chart-container {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.chart-container h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .indicadores-kpis-grid {
+    grid-template-columns: 1fr;
+  }
+  .indicadores-charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
