@@ -3,13 +3,12 @@
 | Campo | Valor |
 |-------|-------|
 | Tipo | Proposta de interface/design |
-| Status | Aprovada |
+| Status | Implantada |
 | Prioridade | Alta |
 | Data | 2026-09-28 |
 | Autor | Claude |
 | Telas afetadas | Novo Documento / Revisão Técnica (formulario.html), Painel Kanban (index.html), todos os CTAs pêssego do sistema |
 
-<!-- Nome do arquivo: AAAA-MM-DD_design_titulo-curto.md. Veja ideias/README.md. -->
 
 ---
 

@@ -15,6 +15,8 @@ Este README é o índice da documentação e o relatório final da análise do c
 | [03 – Guia de preenchimento](03-guia-de-preenchimento.md) | Usuários (Solicitantes e Qualidade) | Login, visão geral das telas, escolha entre Novo Documento e Revisão Técnica, passo a passo de cadastro, tabela campo a campo, regras de arquivos, acompanhamento no Painel, mudança de status e edição, exportação CSV, erros comuns e perguntas frequentes |
 | [04 – Design](04-design.md) | Desenvolvedores e design | Princípios visuais, paleta de cores, tema claro/escuro, tipografia, espaçamento/raios/sombras, layout, catálogo de componentes, ícones, animações, responsividade, acessibilidade, guia para evoluir o sistema e pendências conhecidas |
 | [05 – Perfil do administrador](05-perfil-do-administrador.md) | Todos | Quem idealizou e administra o DocFlow, responsabilidades no SGI, dores atuais, objetivos com o sistema e modelo de trabalho (dono do produto, Claude e Antigravity) |
+| [06 – Pipeline de ideias e agentes](06-pipeline-de-ideias-e-agentes.md) | Equipe do projeto | Fluxo entre Claude, Eric e Antigravity (arquivo ainda vazio) |
+| [07 – Revisão técnica das ideias](07-revisao-tecnica-ideias-claude.md) | Desenvolvimento | Análise do Antigravity sobre as ideias propostas pelo Claude |
 
 ### Pastas de ideias
 

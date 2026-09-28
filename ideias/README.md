@@ -101,6 +101,16 @@ Ao mover, mantenha o nome do arquivo e a pasta de tipo. Por exemplo, `ideias/mod
 
 | Data | Tipo | Título | Prioridade | Status |
 |------|------|--------|------------|--------|
-| | | | | |
+| 2026-09-28 | Problema | [Login com conta Microsoft](modelos/modelo_problema/2026-09-28_login-microsoft.md) | Alta | Rascunho |
+| 2026-09-28 | Função | [Controle de validade dos documentos](modelos/modelo_funcao/2026-09-28_controle-validade-documentos.md) | Alta | Rascunho |
+| 2026-09-28 | Função | [Matriz de treinamentos](modelos/modelo_funcao/2026-09-28_matriz-treinamentos.md) | Alta | Rascunho |
+| 2026-09-28 | Função | [Notificações por e-mail e Teams](modelos/modelo_funcao/2026-09-28_notificacoes-email-teams.md) | Média | Rascunho |
+| 2026-09-28 | Função | [Lista mestra de documentos](modelos/modelo_funcao/2026-09-28_lista-mestra-documentos.md) | Média | Rascunho |
+| 2026-09-28 | Função | [Não conformidades e planos de ação](modelos/modelo_funcao/2026-09-28_nao-conformidades-planos-acao.md) | Média | Rascunho |
+| 2026-09-28 | Design | [Minha fila](modelos/modelo_design/2026-09-28_minha-fila.md) | Média | Rascunho |
+| 2026-09-28 | Design | [Portal do SGI](modelos/modelo_design/2026-09-28_portal-sgi.md) | Média | Rascunho |
+| 2026-09-28 | Design | [Layout para celular](modelos/modelo_design/2026-09-28_layout-mobile.md) | Média | Rascunho |
+| 2026-09-28 | Função | [Painel de auditoria](modelos/modelo_funcao/2026-09-28_painel-auditoria.md) | Baixa | Rascunho |
+| 2026-09-28 | Função | [Busca global](modelos/modelo_funcao/2026-09-28_busca-global.md) | Baixa | Rascunho |
 
 As três primeiras ideias (integridade da sincronização, feedback de envio e acessibilidade, painel de indicadores do SGI) já foram implantadas e estão listadas em [`ideias_implantadas/README.md`](../ideias_implantadas/README.md).

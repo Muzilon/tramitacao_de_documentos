@@ -3,13 +3,12 @@
 | Campo | Valor |
 |-------|-------|
 | Tipo | Resolução de problema |
-| Status | Aprovada |
+| Status | Implantada |
 | Prioridade | Alta |
 | Data | 2026-09-28 |
 | Autor | Claude |
 | Telas afetadas | Painel (Kanban) e modais de detalhe, edição, anexos e auditoria; Novo Documento; sincronização em login, Painel e Novo Documento |
 
-<!-- Nome do arquivo: AAAA-MM-DD_problema_titulo-curto.md. Veja ideias/README.md. -->
 
 ---
 

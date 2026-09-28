@@ -3,7 +3,7 @@
 | Campo | Valor |
 |-------|-------|
 | Tipo | Nova funcionalidade |
-| Status | Aprovada |
+| Status | Implantada |
 | Prioridade | Média |
 | Data | 2026-09-28 |
 | Autor | Claude |
@@ -11,7 +11,6 @@
 
 > **Aprovada com pendências:** implementar só depois que as perguntas em aberto forem respondidas pelo Eric (indicadores existentes, planilha atual, permissões no Power Automate).
 
-<!-- Nome do arquivo: 2026-09-28_funcao_painel-indicadores-sgi.md. Veja ideias/README.md. -->
 
 ---
 
