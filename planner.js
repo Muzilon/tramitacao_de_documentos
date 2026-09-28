@@ -1772,7 +1772,7 @@ window.calcularERenderizarIndicadores = function() {
 window.abrirModalIndicadores = function() {
   const modal = document.getElementById('modal-indicadores');
   if (!modal) return;
-  modal.classList.add('open');
+  modal.style.display = 'flex';
   modal.setAttribute('aria-hidden', 'false');
   calcularERenderizarIndicadores();
 };
@@ -1780,7 +1780,7 @@ window.abrirModalIndicadores = function() {
 window.fecharModalIndicadores = function() {
   const modal = document.getElementById('modal-indicadores');
   if (modal) {
-    modal.classList.remove('open');
+    modal.style.display = 'none';
     modal.setAttribute('aria-hidden', 'true');
   }
 };

@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+�<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DocFlow - Painel de TramitaÃ§Ã£o</title>
+    <title>DocFlow - Painel de Tramitação</title>
     <!-- Google Fonts Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +20,7 @@
     </script>
     <link rel="stylesheet" href="paleta.css">
     <link rel="stylesheet" href="formulario.css">
-    <!-- Biblioteca SheetJS para leitura e manipulaÃ§Ã£o de arquivos Excel -->
+    <!-- Biblioteca SheetJS para leitura e manipulação de arquivos Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script type="module" src="planner.js"></script>
     <script type="module">
@@ -29,10 +29,10 @@
     </script>
   </head>
   <body>
-    <!-- Shell da AplicaÃ§Ã£o: Sidebar Fixa + ConteÃºdo -->
+    <!-- Shell da Aplicação: Sidebar Fixa + Conteúdo -->
     <div class="app-shell">
       <aside class="app-sidebar" id="app-sidebar">
-        <!-- Recorte cÃ´ncavo do item ativo: posicionado dinamicamente por sidebar.js -->
+        <!-- Recorte côncavo do item ativo: posicionado dinamicamente por sidebar.js -->
         <div class="sidebar-notch-body" id="sidebar-notch-body"></div>
         <div class="sidebar-notch-ear sidebar-notch-ear-top" id="sidebar-notch-ear-top"></div>
         <div class="sidebar-notch-ear sidebar-notch-ear-bottom" id="sidebar-notch-ear-bottom"></div>
@@ -48,7 +48,7 @@
             <span class="sidebar-logo-text">DocFlow</span>
           </div>
 
-          <!-- Menu de NavegaÃ§Ã£o Global -->
+          <!-- Menu de Navegação Global -->
           <nav class="sidebar-nav">
             <a href="index.html" class="sidebar-link active">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -80,26 +80,26 @@
                 Indicadores SGI
               </button>
 
-              <!-- Perfil do UsuÃ¡rio Logado -->
+              <!-- Perfil do Usuário Logado -->
               <div class="user-profile-badge" id="header-user-badge"></div>
 
-              <!-- Menu de Engrenagens (ConfiguraÃ§Ãµes, Tema & SincronizaÃ§Ã£o) -->
+              <!-- Menu de Engrenagens (Configurações, Tema & Sincronização) -->
               <div class="header-settings-wrapper" id="header-settings-wrapper">
-                <button type="button" class="header-settings-btn" id="btn-settings-toggle" aria-label="ConfiguraÃ§Ãµes e SincronizaÃ§Ã£o" title="ConfiguraÃ§Ãµes & SincronizaÃ§Ã£o">
+                <button type="button" class="header-settings-btn" id="btn-settings-toggle" aria-label="Configurações e Sincronização" title="Configurações & Sincronização">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                   </svg>
                 </button>
                 <div class="header-settings-dropdown" id="header-settings-dropdown">
-                  <!-- ConteÃºdo renderizado dinamicamente pelo data-service.js -->
+                  <!-- Conteúdo renderizado dinamicamente pelo data-service.js -->
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- BotÃ£o de expandir/colapsar a sidebar -->
+        <!-- Botão de expandir/colapsar a sidebar -->
         <button type="button" class="sidebar-toggle-btn" id="sidebar-toggle-btn" aria-label="Colapsar menu" title="Colapsar menu">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
@@ -121,7 +121,7 @@
             </div>
           </div>
           <span class="kpi-val" id="kpi-total">0</span>
-          <span class="kpi-subtext" id="sub-kpi-total">documentos em tramitaÃ§Ã£o ativa</span>
+          <span class="kpi-subtext" id="sub-kpi-total">documentos em tramitação ativa</span>
         </div>
 
         <!-- KPI 2: Vencendo esta semana -->
@@ -152,7 +152,7 @@
             </div>
           </div>
           <span class="kpi-val" id="kpi-atrasado" style="color: var(--cor-coral);">0</span>
-          <span class="kpi-subtext" id="sub-kpi-atrasado">passaram do prazo de revisÃ£o</span>
+          <span class="kpi-subtext" id="sub-kpi-atrasado">passaram do prazo de revisão</span>
         </div>
 
         <!-- KPI 4: Aprovados -->
@@ -167,24 +167,24 @@
             </div>
           </div>
           <span class="kpi-val" id="kpi-aprovado" style="color: var(--cor-verde);">0</span>
-          <span class="kpi-subtext" id="sub-kpi-aprovado">concluÃ­dos este mÃªs</span>
+          <span class="kpi-subtext" id="sub-kpi-aprovado">concluídos este mês</span>
         </div>
       </section>
 
-      <!-- Barra de Filtros e Busca RÃ¡pida -->
+      <!-- Barra de Filtros e Busca Rápida -->
       <section class="planner-filter-bar">
         <div class="search-box">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="input-busca" placeholder="Buscar por tÃ­tulo, cÃ³digo ou remetente...">
+          <input type="text" id="input-busca" placeholder="Buscar por título, código ou remetente...">
         </div>
 
         <div class="filter-group">
-          <label for="filtro-area" style="font-size: 13px; margin: 0;">Filtrar por Ãrea:</label>
+          <label for="filtro-area" style="font-size: 13px; margin: 0;">Filtrar por Área:</label>
           <select id="filtro-area">
-            <option value="">Todas as Ãreas</option>
+            <option value="">Todas as Áreas</option>
           </select>
           <button id="btn-abrir-cancelados" type="button" class="btn-cancelados-pill" title="Ver documentos cancelados">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -205,7 +205,7 @@
         </div>
       </section>
 
-      <!-- Quadro Kanban (5 Colunas â€” cores alinhadas Ã  paleta oficial da marca) -->
+      <!-- Quadro Kanban (5 Colunas � cores alinhadas à paleta oficial da marca) -->
       <section class="planner-board">
         <!-- Coluna 1: Recebido -->
         <div class="planner-col" id="col-recebido" style="border-top: 3px solid var(--cor-cinza);">
@@ -219,36 +219,36 @@
           <div class="cards-container" id="cards-recebido"></div>
         </div>
 
-        <!-- Coluna 2: Em RevisÃ£o -->
+        <!-- Coluna 2: Em Revisão -->
         <div class="planner-col" id="col-revisao" style="border-top: 3px solid var(--cor-pessego);">
           <div class="planner-col-header">
             <div class="col-header-left">
               <span class="col-dot amber"></span>
-              <span class="planner-col-title">Em RevisÃ£o</span>
+              <span class="planner-col-title">Em Revisão</span>
             </div>
             <span class="col-count-pill" id="count-col-revisao">0</span>
           </div>
           <div class="cards-container" id="cards-revisao"></div>
         </div>
 
-        <!-- Coluna 3: Devolvido Ã  Ãrea -->
+        <!-- Coluna 3: Devolvido à Área -->
         <div class="planner-col" id="col-devolvido" style="border-top: 3px solid var(--cor-vinho);">
           <div class="planner-col-header">
             <div class="col-header-left">
               <span class="col-dot vinho"></span>
-              <span class="planner-col-title">Devolvido Ã  Ãrea</span>
+              <span class="planner-col-title">Devolvido à Área</span>
             </div>
             <span class="col-count-pill" id="count-col-devolvido">0</span>
           </div>
           <div class="cards-container" id="cards-devolvido"></div>
         </div>
 
-        <!-- Coluna 4: Em AprovaÃ§Ã£o -->
+        <!-- Coluna 4: Em Aprovação -->
         <div class="planner-col" id="col-aprovacao" style="border-top: 3px solid var(--cor-ambar);">
           <div class="planner-col-header">
             <div class="col-header-left">
               <span class="col-dot dourado"></span>
-              <span class="planner-col-title">Em AprovaÃ§Ã£o</span>
+              <span class="planner-col-title">Em Aprovação</span>
             </div>
             <span class="col-count-pill" id="count-col-aprovacao">0</span>
           </div>
@@ -283,39 +283,39 @@
             <span id="modal-status-badge"></span>
           </div>
           <div class="modal-header-right">
-            <button type="button" id="btn-ver-auditoria" class="btn-auditoria-modal" title="Ver histÃ³rico completo de alteraÃ§Ãµes (ediÃ§Ãµes, arquivos e status)">
+            <button type="button" id="btn-ver-auditoria" class="btn-auditoria-modal" title="Ver histórico completo de alterações (edições, arquivos e status)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
-              <span>HistÃ³rico Completo</span>
+              <span>Histórico Completo</span>
             </button>
-            <button type="button" id="btn-editar-modal" class="btn-editar-modal" title="Editar informaÃ§Ãµes do documento">
+            <button type="button" id="btn-editar-modal" class="btn-editar-modal" title="Editar informações do documento">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
               </svg>
               <span>Editar</span>
             </button>
-            <button type="button" id="btn-fechar-modal" class="pill-btn-close" title="Fechar">âœ•</button>
+            <button type="button" id="btn-fechar-modal" class="pill-btn-close" title="Fechar">�S"</button>
           </div>
         </div>
 
-        <!-- ================= MODO DE VISUALIZAÃ‡ÃƒO ================= -->
+        <!-- ================= MODO DE VISUALIZA�!ÒO ================= -->
         <div id="modal-view-mode">
-          <!-- TÃ­tulo do Documento -->
+          <!-- Título do Documento -->
           <div class="modal-title-area">
-            <h3 id="modal-titulo" class="modal-title">TÃ­tulo do Documento</h3>
+            <h3 id="modal-titulo" class="modal-title">Título do Documento</h3>
             <span id="modal-tipo" class="card-type-tag">Tipo de Documento</span>
           </div>
 
           <div class="modal-content-split">
             <!-- Coluna Esquerda: Dados do Documento e Anexos -->
             <div class="modal-left-pane">
-              <!-- ConteÃºdo dos Detalhes em Grid -->
+              <!-- Conteúdo dos Detalhes em Grid -->
               <div class="modal-body-grid">
                 <div class="modal-info-item">
-                  <span class="modal-info-label">Remetente / ResponsÃ¡vel</span>
+                  <span class="modal-info-label">Remetente / Responsável</span>
                   <div class="user-info" style="margin-top: 5px;">
                     <span id="modal-avatar" class="avatar-initial">?</span>
                     <strong id="modal-remetente" style="color: #0f172a; font-size: 13px;">-</strong>
@@ -323,7 +323,7 @@
                 </div>
 
                 <div class="modal-info-item">
-                  <span class="modal-info-label">Ãrea & Disciplina</span>
+                  <span class="modal-info-label">Área & Disciplina</span>
                   <strong id="modal-area-disciplina" class="modal-info-value">-</strong>
                 </div>
 
@@ -333,36 +333,36 @@
                 </div>
 
                 <div class="modal-info-item">
-                  <span class="modal-info-label">Data Limite de RevisÃ£o</span>
+                  <span class="modal-info-label">Data Limite de Revisão</span>
                   <strong id="modal-data-revisao" class="modal-info-value">-</strong>
                 </div>
 
                 <div class="modal-info-item modal-item-full">
-                  <span class="modal-info-label">ObservaÃ§Ãµes da TramitaÃ§Ã£o</span>
+                  <span class="modal-info-label">Observações da Tramitação</span>
                   <p id="modal-observacao" class="modal-obs-text">-</p>
                 </div>
 
-                <!-- SeÃ§Ã£o de Arquivos e Pastas -->
+                <!-- Seção de Arquivos e Pastas -->
                 <div class="modal-info-item modal-item-full modal-anexos-box">
                   <span class="modal-info-label">Arquivos & Pastas Vinculadas</span>
 
-                  <!-- Alerta quando NÃƒO houver arquivos nem links -->
+                  <!-- Alerta quando NÒO houver arquivos nem links -->
                   <div id="modal-alerta-sem-anexos" class="alerta-sem-anexo" style="display: none;">
-                    <div class="alerta-icone">âš ï¸</div>
+                    <div class="alerta-icone">�a�️</div>
                     <div class="alerta-texto">
-                      <strong>Nenhum arquivo anexado ou link disponÃ­vel</strong>
-                      <p>VocÃª pode colar o link direto da pasta abaixo ou selecionar arquivos para criar a pasta automaticamente no SharePoint.</p>
+                      <strong>Nenhum arquivo anexado ou link disponível</strong>
+                      <p>Você pode colar o link direto da pasta abaixo ou selecionar arquivos para criar a pasta automaticamente no SharePoint.</p>
                     </div>
                   </div>
 
                   <!-- Resumo dos arquivos existentes -->
                   <div id="modal-files-summary" class="modal-files-summary">
                     <div style="display:flex; align-items:center; gap:8px;">
-                      <span>ðŸ“„</span>
+                      <span>�x</span>
                       <span id="modal-arquivo-principal" class="modal-file-name">Documento Principal: -</span>
                     </div>
                     <div id="modal-anexos-complementares-info" style="display:flex; align-items:center; gap:8px; margin-top: 6px;">
-                      <span>ðŸ“</span>
+                      <span>�x�</span>
                       <span id="modal-qtd-anexos" class="modal-file-name">Anexos Complementares: 0 arquivos</span>
                     </div>
                   </div>
@@ -406,24 +406,24 @@
               </div>
             </div>
 
-            <!-- Coluna Direita: Fluxo de TramitaÃ§Ã£o (Estilo Rio Vertical) -->
+            <!-- Coluna Direita: Fluxo de Tramitação (Estilo Rio Vertical) -->
             <div class="modal-right-pane">
               <div class="timeline-river-header">
                 <div class="timeline-river-title">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                   </svg>
-                  <span>Fluxo de TramitaÃ§Ã£o</span>
+                  <span>Fluxo de Tramitação</span>
                 </div>
                 <span class="timeline-river-sub">Percurso em tempo real</span>
               </div>
 
               <!-- Lista de Etapas Estilo Rio -->
               <div id="timeline-river-container" class="timeline-river-flow">
-                <!-- NÃ³s do fluxo injetados dinamicamente via planner.js -->
+                <!-- Nós do fluxo injetados dinamicamente via planner.js -->
               </div>
 
-              <!-- Controle de MudanÃ§a de Etapa -->
+              <!-- Controle de Mudança de Etapa -->
               <div class="timeline-stage-control">
                 <div class="stage-control-header">
                   <span>Atualizar Etapa</span>
@@ -436,21 +436,21 @@
                       <optgroup label="1. Entrada & Triagem">
                         <option value="Recebido">Recebido</option>
                       </optgroup>
-                      <optgroup label="2. Em AnÃ¡lise TÃ©cnica (Qualidade)">
-                        <option value="Em revisÃ£o da qualidade">Em revisÃ£o da qualidade</option>
-                        <option value="Em revisÃ£o junto Ã  Ã¡rea">Em revisÃ£o junto Ã  Ã¡rea</option>
-                        <option value="Em RevisÃ£o">Em RevisÃ£o (Geral)</option>
+                      <optgroup label="2. Em Análise Técnica (Qualidade)">
+                        <option value="Em revisão da qualidade">Em revisão da qualidade</option>
+                        <option value="Em revisão junto à área">Em revisão junto à área</option>
+                        <option value="Em Revisão">Em Revisão (Geral)</option>
                       </optgroup>
-                      <optgroup label="3. Devolvido para a Ãrea">
-                        <option value="Devolvido para Ã¡rea para revisÃ£o">Devolvido para Ã¡rea para revisÃ£o</option>
-                        <option value="Devolvido para correÃ§Ã£o">Devolvido para correÃ§Ã£o</option>
-                        <option value="Em revisÃ£o do solicitante">Em revisÃ£o do solicitante</option>
+                      <optgroup label="3. Devolvido para a Área">
+                        <option value="Devolvido para área para revisão">Devolvido para área para revisão</option>
+                        <option value="Devolvido para correção">Devolvido para correção</option>
+                        <option value="Em revisão do solicitante">Em revisão do solicitante</option>
                       </optgroup>
-                      <optgroup label="4. Em ValidaÃ§Ã£o & AprovaÃ§Ã£o">
-                        <option value="Para aprovaÃ§Ã£o da Ã¡rea solicitante">Para aprovaÃ§Ã£o da Ã¡rea solicitante</option>
-                        <option value="Para aprovaÃ§Ã£o qualidade">Para aprovaÃ§Ã£o qualidade</option>
+                      <optgroup label="4. Em Validação & Aprovação">
+                        <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
+                        <option value="Para aprovação qualidade">Para aprovação qualidade</option>
                       </optgroup>
-                      <optgroup label="5. ConclusÃ£o & Arquivo">
+                      <optgroup label="5. Conclusão & Arquivo">
                         <option value="Aprovado">Aprovado</option>
                         <option value="Cancelado">Cancelado</option>
                       </optgroup>
@@ -458,17 +458,17 @@
                   </div>
 
                   <div class="stage-field-group">
-                    <label for="input-etapa-observacao" class="stage-field-label">ObservaÃ§Ã£o</label>
-                    <textarea id="input-etapa-observacao" class="stage-input-observacao" rows="2" placeholder="Descreva os detalhes da alteraÃ§Ã£o desta etapa..."></textarea>
+                    <label for="input-etapa-observacao" class="stage-field-label">Observação</label>
+                    <textarea id="input-etapa-observacao" class="stage-input-observacao" rows="2" placeholder="Descreva os detalhes da alteração desta etapa..."></textarea>
                   </div>
 
                   <div class="stage-field-group" id="container-definir-responsavel" style="display: none;">
-                    <label for="input-etapa-destino" class="stage-field-label">Definir responsÃ¡vel</label>
-                    <input type="text" id="input-etapa-destino" class="stage-input-destino" placeholder="Ex: Gestor da Ãrea (Custos)" />
+                    <label for="input-etapa-destino" class="stage-field-label">Definir responsável</label>
+                    <input type="text" id="input-etapa-destino" class="stage-input-destino" placeholder="Ex: Gestor da Área (Custos)" />
                   </div>
 
                   <button type="button" id="btn-salvar-nova-etapa" class="btn-stage-submit">
-                    <span>Registrar AlteraÃ§Ã£o</span>
+                    <span>Registrar Alteração</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
@@ -478,7 +478,7 @@
             </div>
           </div>
 
-          <!-- RodapÃ© do Modal -->
+          <!-- Rodapé do Modal -->
           <div class="modal-footer">
             <div style="display: flex; align-items: center; gap: 8px;">
               <a id="modal-link-sharepoint" href="#" target="_blank" class="btn-sharepoint-modal">
@@ -493,7 +493,7 @@
                 </svg>
               </a>
               <button type="button" id="btn-toggle-link-manual" class="btn-editar-modal" title="Editar ou inserir link da pasta manualmente" style="padding: 9px 12px;">
-                âœï¸ Link
+                �S�️ Link
               </button>
             </div>
 
@@ -508,17 +508,17 @@
           </div>
         </div>
 
-        <!-- ================= MODO DE EDIÃ‡ÃƒO ================= -->
+        <!-- ================= MODO DE EDI�!ÒO ================= -->
         <div id="modal-edit-mode" style="display: none;">
           <form id="form-edicao-modal">
             <div class="form-edicao-modal-grid">
               <div class="edit-modal-box full-width">
-                <label for="edit-titulo">TÃ­tulo do Documento *</label>
+                <label for="edit-titulo">Título do Documento *</label>
                 <input type="text" id="edit-titulo" class="edit-modal-input" required />
               </div>
 
               <div class="edit-modal-box">
-                <label for="edit-codigo">CÃ³digo do Documento</label>
+                <label for="edit-codigo">Código do Documento</label>
                 <input type="text" id="edit-codigo" class="edit-modal-input" />
               </div>
 
@@ -527,36 +527,36 @@
                 <select id="edit-tipo" class="edit-modal-select">
                   <option value="PR - Procedimento">PR - Procedimento</option>
                   <option value="MP - Mapas / Riscos">MP - Mapas / Riscos</option>
-                  <option value="IT - InstruÃ§Ã£o de Trabalho">IT - InstruÃ§Ã£o de Trabalho</option>
-                  <option value="ET - EspecificaÃ§Ã£o TÃ©cnica">ET - EspecificaÃ§Ã£o TÃ©cnica</option>
-                  <option value="RL - RelatÃ³rio">RL - RelatÃ³rio</option>
-                  <option value="AT - Ata de ReuniÃ£o">AT - Ata de ReuniÃ£o</option>
+                  <option value="IT - Instrução de Trabalho">IT - Instrução de Trabalho</option>
+                  <option value="ET - Especificação Técnica">ET - Especificação Técnica</option>
+                  <option value="RL - Relatório">RL - Relatório</option>
+                  <option value="AT - Ata de Reunião">AT - Ata de Reunião</option>
                   <option value="LD - Lista de Documentos">LD - Lista de Documentos</option>
                   <option value="Memorial Descritivo">Memorial Descritivo</option>
                 </select>
               </div>
 
               <div class="edit-modal-box">
-                <label for="edit-status">Status da TramitaÃ§Ã£o</label>
+                <label for="edit-status">Status da Tramitação</label>
                 <select id="edit-status" class="edit-modal-select">
                   <optgroup label="1. Entrada & Triagem">
                     <option value="Recebido">Recebido</option>
                   </optgroup>
-                  <optgroup label="2. Em AnÃ¡lise TÃ©cnica (Qualidade)">
-                    <option value="Em revisÃ£o da qualidade">Em revisÃ£o da qualidade</option>
-                    <option value="Em revisÃ£o junto Ã  Ã¡rea">Em revisÃ£o junto Ã  Ã¡rea</option>
-                    <option value="Em RevisÃ£o">Em RevisÃ£o (Geral)</option>
+                  <optgroup label="2. Em Análise Técnica (Qualidade)">
+                    <option value="Em revisão da qualidade">Em revisão da qualidade</option>
+                    <option value="Em revisão junto à área">Em revisão junto à área</option>
+                    <option value="Em Revisão">Em Revisão (Geral)</option>
                   </optgroup>
-                  <optgroup label="3. Devolvido para a Ãrea">
-                    <option value="Devolvido para Ã¡rea para revisÃ£o">Devolvido para Ã¡rea para revisÃ£o</option>
-                    <option value="Devolvido para correÃ§Ã£o">Devolvido para correÃ§Ã£o</option>
-                    <option value="Em revisÃ£o do solicitante">Em revisÃ£o do solicitante</option>
+                  <optgroup label="3. Devolvido para a Área">
+                    <option value="Devolvido para área para revisão">Devolvido para área para revisão</option>
+                    <option value="Devolvido para correção">Devolvido para correção</option>
+                    <option value="Em revisão do solicitante">Em revisão do solicitante</option>
                   </optgroup>
-                  <optgroup label="4. Em ValidaÃ§Ã£o & AprovaÃ§Ã£o">
-                    <option value="Para aprovaÃ§Ã£o da Ã¡rea solicitante">Para aprovaÃ§Ã£o da Ã¡rea solicitante</option>
-                    <option value="Para aprovaÃ§Ã£o qualidade">Para aprovaÃ§Ã£o qualidade</option>
+                  <optgroup label="4. Em Validação & Aprovação">
+                    <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
+                    <option value="Para aprovação qualidade">Para aprovação qualidade</option>
                   </optgroup>
-                  <optgroup label="5. ConclusÃ£o & Arquivo">
+                  <optgroup label="5. Conclusão & Arquivo">
                     <option value="Aprovado">Aprovado</option>
                     <option value="Cancelado">Cancelado</option>
                   </optgroup>
@@ -564,17 +564,17 @@
               </div>
 
               <div class="edit-modal-box">
-                <label for="edit-revisao">NÂ° de RevisÃ£o</label>
+                <label for="edit-revisao">N° de Revisão</label>
                 <input type="number" id="edit-revisao" min="0" class="edit-modal-input" />
               </div>
 
               <div class="edit-modal-box">
-                <label for="edit-remetente">Remetente / ResponsÃ¡vel</label>
+                <label for="edit-remetente">Remetente / Responsável</label>
                 <input type="text" id="edit-remetente" class="edit-modal-input" />
               </div>
 
               <div class="edit-modal-box">
-                <label for="edit-area">Ãrea / Setor</label>
+                <label for="edit-area">Área / Setor</label>
                 <input type="text" id="edit-area" class="edit-modal-input" />
               </div>
 
@@ -589,12 +589,12 @@
               </div>
 
               <div class="edit-modal-box">
-                <label for="edit-data-revisao">Data Limite de RevisÃ£o</label>
+                <label for="edit-data-revisao">Data Limite de Revisão</label>
                 <input type="date" id="edit-data-revisao" class="edit-modal-input" />
               </div>
 
               <div class="edit-modal-box full-width">
-                <label for="edit-observacao">ObservaÃ§Ãµes Complementares</label>
+                <label for="edit-observacao">Observações Complementares</label>
                 <textarea id="edit-observacao" rows="3" class="edit-modal-textarea"></textarea>
               </div>
             </div>
@@ -607,7 +607,7 @@
                   <polyline points="17 21 17 13 7 13 7 21"></polyline>
                   <polyline points="7 3 7 8 15 8"></polyline>
                 </svg>
-                <span>Salvar AlteraÃ§Ãµes</span>
+                <span>Salvar Alterações</span>
               </button>
             </div>
           </form>
@@ -628,10 +628,10 @@
             <span>Documentos Cancelados</span>
             <span class="badge-count" id="modal-cancelados-count" style="background:#ef4444; color:#fff; font-size:11px; padding:2px 8px; border-radius:12px; margin-left:6px;">0</span>
           </h3>
-          <button type="button" class="btn-fechar-modal" id="btn-fechar-cancelados" title="Fechar">âœ•</button>
+          <button type="button" class="btn-fechar-modal" id="btn-fechar-cancelados" title="Fechar">�S"</button>
         </div>
         <div style="padding: 10px 20px 0 20px; font-size: 12px; color: #64748b;">
-          Estes documentos foram cancelados e nÃ£o aparecem no quadro ativo. VocÃª pode reativÃ¡-los a qualquer momento.
+          Estes documentos foram cancelados e não aparecem no quadro ativo. Você pode reativá-los a qualquer momento.
         </div>
         <div class="modal-cancelados-body" id="cards-cancelados">
           <!-- Cards cancelados renderizados via JS -->
@@ -640,7 +640,7 @@
     </div>
 
     <!-- Modal de Indicadores SGI -->
-    <div id="modal-indicadores" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="indicadores-titulo">
+    <div id="modal-indicadores" class="modal-overlay" style="display: none;" aria-hidden="true" role="dialog" aria-labelledby="indicadores-titulo">
       <div class="modal-content modal-indicadores-wrapper">
         <div class="modal-header">
           <h3 id="indicadores-titulo">Painel de Indicadores SGI</h3>
@@ -652,8 +652,8 @@
           <div class="indicadores-kpis-grid">
             <div class="indicador-card">
               <span class="indicador-valor" id="ind-lead-time">0 dias</span>
-              <span class="indicador-label">Lead Time MÃ©dio Total</span>
-              <span class="indicador-hint">Da entrada Ã  aprovaÃ§Ã£o</span>
+              <span class="indicador-label">Lead Time Médio Total</span>
+              <span class="indicador-hint">Da entrada à aprovação</span>
             </div>
             <div class="indicador-card">
               <span class="indicador-valor" id="ind-gargalo">--</span>
@@ -662,19 +662,19 @@
             </div>
             <div class="indicador-card">
               <span class="indicador-valor" id="ind-taxa-reprovacao">0%</span>
-              <span class="indicador-label">Taxa de DevoluÃ§Ã£o</span>
+              <span class="indicador-label">Taxa de Devolução</span>
               <span class="indicador-hint">Docs devolvidos / total</span>
             </div>
           </div>
 
-          <!-- GrÃ¡ficos -->
+          <!-- Gráficos -->
           <div class="indicadores-charts-grid">
             <div class="chart-container">
-              <h4>Tempo MÃ©dio por Fase (dias)</h4>
+              <h4>Tempo Médio por Fase (dias)</h4>
               <canvas id="chart-tempo-fase" height="200"></canvas>
             </div>
             <div class="chart-container">
-              <h4>Volume de Documentos por Ãrea</h4>
+              <h4>Volume de Documentos por Área</h4>
               <canvas id="chart-volume-area" height="200"></canvas>
             </div>
           </div>
@@ -683,21 +683,21 @@
       </div>
     </div>
 
-    <!-- Modal de HistÃ³rico Completo de AlteraÃ§Ãµes (Auditoria Detalhada) -->
+    <!-- Modal de Histórico Completo de Alterações (Auditoria Detalhada) -->
     <div id="modal-auditoria" class="modal-overlay" style="display: none;">
       <div class="modal-card modal-auditoria-card">
         <div class="modal-header">
           <div class="modal-header-badges">
-            <span class="auditoria-badge-tag">HistÃ³rico de AlteraÃ§Ãµes</span>
+            <span class="auditoria-badge-tag">Histórico de Alterações</span>
             <span id="modal-auditoria-codigo" class="card-code">DOC-0001</span>
             <span id="modal-auditoria-revisao" class="card-rev" style="background:#f1f5f9; padding:3px 8px; border-radius:4px; font-weight:600;">Rev. 0</span>
           </div>
-          <button type="button" class="pill-btn-close" id="btn-fechar-auditoria" title="Fechar">âœ•</button>
+          <button type="button" class="pill-btn-close" id="btn-fechar-auditoria" title="Fechar">�S"</button>
         </div>
 
         <div class="auditoria-header-content">
-          <h3 id="modal-auditoria-titulo" class="auditoria-title">TÃ­tulo do Documento</h3>
-          <p class="auditoria-subtitle">Registro detalhado de todas as movimentaÃ§Ãµes, ediÃ§Ãµes de dados e atualizaÃ§Ãµes realizadas neste documento.</p>
+          <h3 id="modal-auditoria-titulo" class="auditoria-title">Título do Documento</h3>
+          <p class="auditoria-subtitle">Registro detalhado de todas as movimentações, edições de dados e atualizações realizadas neste documento.</p>
         </div>
 
         <div class="auditoria-timeline-wrapper" id="auditoria-timeline-container">
