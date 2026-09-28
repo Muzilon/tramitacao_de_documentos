@@ -2,9 +2,9 @@
 
 ## 1. Visão Geral das Propostas
 As seguintes ideias foram adicionadas em `ideias/` e analisadas para implementação:
-1. `2026-09-28_design_feedback-envio-e-acessibilidade.md`: Foca na melhoria da interface, acessibilidade, feedback de submissão de formulários, validações e novos tokens CSS de contraste.
-2. `2026-09-28_funcao_painel-indicadores-sgi.md`: Propõe um novo módulo para gestão e exibição de Indicadores do SGI, separado da tramitação de documentos, com novas páginas (visão pública e gestão), gráficos e integração via fluxos.
-3. `2026-09-28_problema_integridade-sincronizacao.md`: Apresenta uma solução arquitetural crítica para a divergência de dados entre o frontend e a planilha do SharePoint, introduzindo IDs estáveis, fila de envios pendentes e merge de modificações.
+1. `modelos/modelo_design/2026-09-28_feedback-envio-e-acessibilidade.md`: Foca na melhoria da interface, acessibilidade, feedback de submissão de formulários, validações e novos tokens CSS de contraste.
+2. `modelos/modelo_funcao/2026-09-28_painel-indicadores-sgi.md`: Propõe um novo módulo para gestão e exibição de Indicadores do SGI, separado da tramitação de documentos, com novas páginas (visão pública e gestão), gráficos e integração via fluxos.
+3. `modelos/modelo_problema/2026-09-28_integridade-sincronizacao.md`: Apresenta uma solução arquitetural crítica para a divergência de dados entre o frontend e a planilha do SharePoint, introduzindo IDs estáveis, fila de envios pendentes e merge de modificações.
 
 ## 2. Análise da Base de Código Atual e Conexão das Propostas
 A arquitetura atual do sistema (em arquivos como `formulario.html`, `formulario.js`, `planner.html/js`, `data-service.js`, `auth-service.js` e `formulario.css`) baseia-se em armazenamento local sincronizado pontualmente via webhooks do Power Automate. 
