@@ -1,0 +1,385 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocFlow - Tramitação de Documentos</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        try {
+          const t = localStorage.getItem('docflow_theme');
+          if (t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <!-- Conexão com o arquivo CSS -->
+    <link rel="stylesheet" href="paleta.css">
+    <link rel="stylesheet" href="formulario.css">
+    <!-- Biblioteca SheetJS para leitura e manipulação de arquivos Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script type="module" src="formulario.js"></script>
+    <script type="module">
+      import { inicializarSidebar } from './sidebar.js';
+      inicializarSidebar();
+    </script>
+  </head>
+  <body>
+    <!-- Shell da Aplicação: Sidebar Fixa + Conteúdo -->
+    <div class="app-shell">
+      <aside class="app-sidebar" id="app-sidebar">
+        <!-- Recorte côncavo do item ativo: posicionado dinamicamente por sidebar.js -->
+        <div class="sidebar-notch-body" id="sidebar-notch-body"></div>
+        <div class="sidebar-notch-ear sidebar-notch-ear-top" id="sidebar-notch-ear-top"></div>
+        <div class="sidebar-notch-ear sidebar-notch-ear-bottom" id="sidebar-notch-ear-bottom"></div>
+
+        <div class="sidebar-content">
+          <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            </div>
+            <span class="sidebar-logo-text">DocFlow</span>
+          </div>
+
+          <!-- Menu de Navegação Global -->
+          <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="9" rx="1.5"></rect>
+                <rect x="14" y="3" width="7" height="5" rx="1.5"></rect>
+                <rect x="14" y="12" width="7" height="9" rx="1.5"></rect>
+                <rect x="3" y="16" width="7" height="5" rx="1.5"></rect>
+              </svg>
+              <span>Painel</span>
+            </a>
+            <a href="formulario.html" class="sidebar-link active">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Novo Registro</span>
+            </a>
+          </nav>
+
+          <div class="sidebar-footer">
+            <div class="header-badge">
+              <span class="pulse-indicator"></span>
+              <span>SharePoint</span>
+            </div>
+
+            <div class="header-right-area">
+              <!-- Perfil do Usuário Logado -->
+              <div class="user-profile-badge" id="header-user-badge"></div>
+
+              <!-- Menu de Engrenagens (Configurações, Tema & Sincronização) -->
+              <div class="header-settings-wrapper" id="header-settings-wrapper">
+                <button type="button" class="header-settings-btn" id="btn-settings-toggle" aria-label="Configurações e Sincronização" title="Configurações & Sincronização">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                  </svg>
+                </button>
+                <div class="header-settings-dropdown" id="header-settings-dropdown">
+                  <!-- Conteúdo renderizado dinamicamente pelo data-service.js -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botão de expandir/colapsar a sidebar -->
+        <button type="button" class="sidebar-toggle-btn" id="sidebar-toggle-btn" aria-label="Colapsar menu" title="Colapsar menu">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+      </aside>
+
+      <div class="app-main-col">
+        <main class="main-container main-pill-container">
+      <!-- Card do Formulário Estilo Pill / Floating Labels (Imagem de Referência) -->
+      <section class="card-formulario-pill">
+        <div id="faixa-offline" class="envio-offline-faixa" role="alert" aria-live="polite">
+          Você está sem conexão. Pode continuar preenchendo; o registro será salvo.
+        </div>
+        <!-- Topo com Toggle Capsule e Botão Fechar/Reset -->
+        <div class="pill-card-top">
+          <div class="capsule-switch">
+            <button type="button" class="capsule-btn active" id="tab-novo">Novo Documento</button>
+            <button type="button" class="capsule-btn" id="tab-revisao">Revisão Técnica</button>
+          </div>
+          <button type="reset" form="form-tramitacao" class="pill-btn-close" title="Limpar formulário">✕</button>
+        </div>
+
+        <!-- Título e Subtítulo -->
+        <div class="pill-card-title-area">
+          <h2 class="pill-card-title">Registro de Documento – DocFlow</h2>
+          <div id="resumo-erros" class="form-resumo-erros" role="alert" aria-live="assertive" tabindex="-1">
+            <strong id="resumo-erros-titulo">Faltam itens para registrar o documento:</strong>
+            <ul id="resumo-erros-lista"></ul>
+          </div>
+        </div>
+
+        <form id="form-tramitacao">
+          <div class="pill-form-grid">
+            <!-- Título (Pill) -->
+            <div class="pill-input-box">
+              <label for="titulo" class="pill-label">Título do Documento *</label>
+              <input type="text" id="titulo" name="titulo" class="pill-input" placeholder="Ex: Manual de Procedimentos" required>
+            </div>
+            <div id="erro-titulo" class="campo-erro-msg">Informe o título do documento.</div>
+
+            <!-- Código do Documento (Pill) -->
+            <div class="pill-input-box">
+              <label for="codigo" class="pill-label">Código do Documento *</label>
+              <input type="text" id="codigo" name="codigo" class="pill-input" placeholder="Ex: MR-IND-0001-CTO-001" required>
+            </div>
+            <div id="erro-codigo" class="campo-erro-msg">Informe o código do documento.</div>
+
+            <!-- Tipo de Documento (Pill Select) -->
+            <div class="pill-input-box">
+              <label for="tipo-documento" class="pill-label">Tipo de Documento *</label>
+              <select id="tipo-documento" name="tipoDocumento" class="pill-select" required>
+                <option value="">Selecione o tipo...</option>
+                <option value="MP - Mapas / Riscos">MP - Mapas / Riscos</option>
+                <option value="PR - Procedimento">PR - Procedimento</option>
+                <option value="IT - Instrução de Trabalho">IT - Instrução de Trabalho</option>
+                <option value="ET - Especificação Técnica">ET - Especificação Técnica</option>
+                <option value="RL - Relatório">RL - Relatório</option>
+                <option value="AT - Ata de Reunião">AT - Ata de Reunião</option>
+                <option value="LD - Lista de Documentos">LD - Lista de Documentos</option>
+              </select>
+            </div>
+
+            <!-- Status (Pill Select) -->
+            <div class="pill-input-box">
+              <label for="status" class="pill-label">Status da Tramitação *</label>
+              <select id="status" name="status" class="pill-select" required>
+                <optgroup label="1. Entrada & Triagem">
+                  <option value="Recebido" selected>Recebido</option>
+                </optgroup>
+                <optgroup label="2. Em Análise Técnica (Qualidade)">
+                  <option value="Em revisão da qualidade">Em revisão da qualidade</option>
+                  <option value="Em revisão junto à área">Em revisão junto à área</option>
+                  <option value="Em Revisão">Em Revisão (Geral)</option>
+                </optgroup>
+                <optgroup label="3. Devolvido para a Área">
+                  <option value="Devolvido para área para revisão">Devolvido para área para revisão</option>
+                  <option value="Devolvido para correção">Devolvido para correção</option>
+                  <option value="Em revisão do solicitante">Em revisão do solicitante</option>
+                </optgroup>
+                <optgroup label="4. Em Validação & Aprovação">
+                  <option value="Para aprovação da área solicitante">Para aprovação da área solicitante</option>
+                  <option value="Para aprovação qualidade">Para aprovação qualidade</option>
+                </optgroup>
+                <optgroup label="5. Conclusão & Arquivo">
+                  <option value="Aprovado">Aprovado</option>
+                  <option value="Cancelado">Cancelado</option>
+                </optgroup>
+              </select>
+            </div>
+            <div id="erro-status" class="campo-erro-msg">Selecione o status da tramitação.</div>
+
+            <!-- Data de Recebimento (Pill Date) -->
+            <div class="pill-input-box">
+              <label for="data-recebimento" class="pill-label">Data de Recebimento *</label>
+              <input type="date" id="data-recebimento" name="dataRecebimento" class="pill-input" required>
+            </div>
+            <div id="erro-data" class="campo-erro-msg">Informe a data de recebimento.</div>
+
+            <!-- Data de Revisão (Pill Date) -->
+            <div class="pill-input-box">
+              <label for="data-revisao" class="pill-label">Data de Revisão (Prazo)</label>
+              <input type="date" id="data-revisao" name="dataRevisao" class="pill-input">
+            </div>
+
+            <!-- Remetente (Pill) -->
+            <div class="pill-input-box">
+              <label for="remetente" class="pill-label">Remetente / Solicitante *</label>
+              <input type="text" id="remetente" name="remetente" class="pill-input" placeholder="Ex: Polyana" required>
+            </div>
+
+            <!-- N° de Revisão (Pill) -->
+            <div class="pill-input-box">
+              <label for="revisao" class="pill-label">N° de Revisão</label>
+              <input type="number" id="revisao" name="revisao" min="0" value="0" class="pill-input">
+            </div>
+
+            <!-- Área (Pill) -->
+            <div class="pill-input-box">
+              <label for="area" class="pill-label">Área / Setor</label>
+              <input type="text" id="area" name="area" class="pill-input" placeholder="Ex: Custos, Engenharia">
+            </div>
+
+            <!-- Disciplina (Pill) -->
+            <div class="pill-input-box">
+              <label for="disciplina" class="pill-label">Disciplina</label>
+              <input type="text" id="disciplina" name="disciplina" class="pill-input" placeholder="Ex: Corporativo, Mecânica">
+            </div>
+
+            <!-- Upload: Documento Principal (Dropzone) -->
+            <div class="upl">
+              <div class="upl-zone-wrap">
+                <div class="upl-zone" id="dropzone-principal" tabindex="0" role="button" aria-label="Anexar arquivo principal" onclick="document.getElementById('arquivo-principal').click()">
+                  <input type="file" id="arquivo-principal" name="arquivoPrincipal" class="hidden-file-input" style="display: none;" required>
+                  
+                  <div id="dropzone-principal-idle" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <span class="upl-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
+                    </span>
+                    <span class="upl-say">
+                      <b>Arraste o arquivo ou Clique</b>
+                      <span>Documento Principal (PDF, Word, Excel)</span>
+                    </span>
+                  </div>
+
+                  <span class="upl-now" id="dropzone-principal-filled" style="display: none;">
+                    <svg class="upl-page" width="36" height="36" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                      <path class="upl-page-line" d="M7.75 4A3.25 3.25 0 0 1 11 .75h16c.121 0 .238.048.323.134l10.793 10.793a.46.46 0 0 1 .134.323v24A3.25 3.25 0 0 1 35 39.25H11A3.25 3.25 0 0 1 7.75 36z" />
+                      <path class="upl-page-line" d="M27 .5V8a4 4 0 0 0 4 4h7.5" />
+                      <rect width="29" height="16" x="1" y="18" rx="8" fill="#B4552A" />
+                      <text x="15.5" y="29.3" text-anchor="middle" class="upl-page-ext" id="ext-doc-principal">DOC</text>
+                    </svg>
+                    <span class="upl-text">
+                      <span class="upl-name" id="nome-doc-principal">Nenhum selecionado</span>
+                      <span class="upl-meta">
+                        <span id="tamanho-doc-principal"></span> · Adicionado
+                      </span>
+                      <span class="upl-track"><span class="upl-bar" style="transform: scaleX(1)"></span></span>
+                    </span>
+                    <span class="upl-end">
+                      <span class="upl-tick">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                      </span>
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <div id="erro-arquivo" class="campo-erro-msg">Selecione o arquivo do documento principal.</div>
+            </div>
+
+            <!-- Upload: Anexos Complementares (Dropzone) -->
+            <div class="upl" style="margin-top: 10px;">
+              <div class="upl-zone-wrap">
+                <div class="upl-zone" id="dropzone-anexos" tabindex="0" role="button" aria-label="Anexar documentos complementares" onclick="document.getElementById('arquivos-anexos').click()">
+                  <input type="file" id="arquivos-anexos" name="arquivosAnexos" class="hidden-file-input" style="display: none;" multiple>
+                  
+                  <div id="dropzone-anexos-idle" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <span class="upl-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
+                    </span>
+                    <span class="upl-say">
+                      <b>Anexos Complementares</b>
+                      <span>Clique ou arraste vários arquivos</span>
+                    </span>
+                  </div>
+
+                  <span class="upl-now" id="dropzone-anexos-filled" style="display: none;">
+                    <svg class="upl-page" width="36" height="36" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                      <path class="upl-page-line" d="M7.75 4A3.25 3.25 0 0 1 11 .75h16c.121 0 .238.048.323.134l10.793 10.793a.46.46 0 0 1 .134.323v24A3.25 3.25 0 0 1 35 39.25H11A3.25 3.25 0 0 1 7.75 36z" />
+                      <path class="upl-page-line" d="M27 .5V8a4 4 0 0 0 4 4h7.5" />
+                      <rect width="29" height="16" x="1" y="18" rx="8" fill="#15803d" />
+                      <text x="15.5" y="29.3" text-anchor="middle" class="upl-page-ext">FILES</text>
+                    </svg>
+                    <span class="upl-text">
+                      <span class="upl-name" id="qtd-anexos-complementares">0 anexos adicionados</span>
+                      <span class="upl-meta">
+                        Prontos para envio
+                      </span>
+                      <span class="upl-track"><span class="upl-bar" style="transform: scaleX(1)"></span></span>
+                    </span>
+                    <span class="upl-end">
+                      <span class="upl-tick">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                      </span>
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lista visual de Anexos Complementares -->
+            <div id="container-anexos-lista" class="pill-box-full pill-anexos-container" style="display: none;">
+              <span class="pill-label">Arquivos complementares a salvar na pasta /Anexos:</span>
+              <div id="lista-anexos-selecionados" class="anexos-tags-row"></div>
+            </div>
+
+            <!-- Observações (Pill Box largo) -->
+            <div class="pill-input-box pill-box-full">
+              <label for="observacao" class="pill-label">Observações Complementares</label>
+              <textarea id="observacao" name="observacao" rows="2" class="pill-textarea" placeholder="Informações adicionais da tramitação..."></textarea>
+            </div>
+          </div>
+
+          <!-- Banner de Erro no Rodapé -->
+          <div id="banner-erro-envio" class="envio-erro-banner" role="alert" style="display: none;">
+            <strong>Não foi possível registrar o documento</strong>
+            <p id="msg-erro-envio">Verifique os campos acima ou sua conexão com a internet.</p>
+          </div>
+
+          <!-- Rodapé do Card com Ação de Registro -->
+          <div class="pill-card-footer">
+            <div class="footer-info-area">
+              <div class="footer-info-title">
+                <span>Destino:</span>
+                <strong>Excel SharePoint & Local</strong>
+              </div>
+              <p class="footer-info-sub">Sincronização automática com SharePoint e Base Local</p>
+            </div>
+            <div class="footer-actions-area">
+              <button type="submit" class="pill-btn-submit" id="btn-submit">
+                <span>Registrar Documento</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Tabela de Documentos Cadastrados -->
+      <section id="secao-lista" class="card-tabela">
+        <div class="tabela-header">
+          <div>
+            <h2 class="tabela-titulo">Documentos Registrados Recentemente</h2>
+            <span id="contador-documentos" class="tabela-contador">Carregando registros...</span>
+          </div>
+          <button id="btn-exportar" type="button" class="btn-exportar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Exportar Excel (CSV)</span>
+          </button>
+        </div>
+
+        <div class="tabela-container">
+          <table class="tabela-tramitacoes">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th style="text-align: center;">Rev.</th>
+                <th>Status</th>
+                <th>Remetente</th>
+                <th>Área / Disciplina</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-corpo"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+      </div>
+    </div>
+  </body>
+</html>

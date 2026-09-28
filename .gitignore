@@ -1,24 +1,15 @@
+# Tentativa de migração para TypeScript/React, arquivada para consulta.
+# O código-fonte e as configurações ficam versionados; as pastas geradas, não.
+_arquivo_tentativa_typescript/node_modules
+_arquivo_tentativa_typescript/dist
+
 # Logs
 logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?

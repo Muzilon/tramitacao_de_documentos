@@ -4,6 +4,8 @@ O DocFlow é o sistema web de **tramitação de documentos** do Grupo Monto. Ele
 
 Este README é o índice da documentação e o relatório final da análise do código.
 
+> **Nota de 28/09/2026:** depois desta análise, três ideias foram implantadas no código (integridade da sincronização, feedback de envio/acessibilidade e painel de indicadores — veja [`ideias_implantadas/`](../ideias_implantadas/)), e o projeto passou por uma tentativa de migração para TypeScript que foi desfeita (veja [08 – Histórico da tentativa de TypeScript](08-historico-tentativa-typescript.md) e o [`CHANGELOG.md`](../CHANGELOG.md)). A tabela de achados na seção 3, abaixo, **reflete o código como ele estava antes dessas mudanças** e não foi reverificada depois. Vários itens de A1 a D4 provavelmente já mudaram de estado; trate esta seção como ponto de partida histórico, não como o status atual, até uma nova varredura confirmar item a item.
+
 ---
 
 ## 1. Índice
