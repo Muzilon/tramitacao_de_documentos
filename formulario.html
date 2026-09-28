@@ -223,30 +223,84 @@
               <input type="text" id="disciplina" name="disciplina" class="pill-input" placeholder="Ex: Corporativo, Mecânica">
             </div>
 
-            <!-- Upload: Documento Principal (Pill) -->
-            <div class="pill-input-box pill-file-box pill-dropzone" id="dropzone-principal" tabindex="0" role="button" aria-label="Anexar arquivo principal">
-              <!-- Mantenha o input file oculto, mas mude texto para ser mais claro -->
-              <input type="file" id="arquivo-principal" name="arquivoPrincipal" class="hidden-file-input" required>
-              <span class="file-instructions">Arraste o arquivo aqui ou <span class="fake-btn">Procurar Arquivo</span></span>
-              <span class="file-hint">Um único arquivo. Word, Excel ou PDF.</span>
-              <span id="nome-doc-principal" class="file-selected-name">Nenhum selecionado</span>
-            </div>
-            <div id="erro-arquivo" class="campo-erro-msg">Selecione o arquivo do documento principal.</div>
+            <!-- Upload: Documento Principal (Dropzone) -->
+            <div class="upl">
+              <div class="upl-zone-wrap">
+                <div class="upl-zone" id="dropzone-principal" tabindex="0" role="button" aria-label="Anexar arquivo principal" onclick="document.getElementById('arquivo-principal').click()">
+                  <input type="file" id="arquivo-principal" name="arquivoPrincipal" class="hidden-file-input" style="display: none;" required>
+                  
+                  <div id="dropzone-principal-idle" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <span class="upl-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
+                    </span>
+                    <span class="upl-say">
+                      <b>Arraste o arquivo ou Clique</b>
+                      <span>Documento Principal (PDF, Word, Excel)</span>
+                    </span>
+                  </div>
 
-            <!-- Upload: Anexos Complementares (Pill) -->
-            <div class="pill-input-box pill-file-box">
-              <div class="file-box-header">
-                <label class="pill-label">Documentos Complementares (Pasta Anexos)</label>
-                <span id="qtd-anexos-complementares" class="file-name-preview">0 anexos adicionados</span>
+                  <span class="upl-now" id="dropzone-principal-filled" style="display: none;">
+                    <svg class="upl-page" width="36" height="36" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                      <path class="upl-page-line" d="M7.75 4A3.25 3.25 0 0 1 11 .75h16c.121 0 .238.048.323.134l10.793 10.793a.46.46 0 0 1 .134.323v24A3.25 3.25 0 0 1 35 39.25H11A3.25 3.25 0 0 1 7.75 36z" />
+                      <path class="upl-page-line" d="M27 .5V8a4 4 0 0 0 4 4h7.5" />
+                      <rect width="29" height="16" x="1" y="18" rx="8" fill="#B4552A" />
+                      <text x="15.5" y="29.3" text-anchor="middle" class="upl-page-ext" id="ext-doc-principal">DOC</text>
+                    </svg>
+                    <span class="upl-text">
+                      <span class="upl-name" id="nome-doc-principal">Nenhum selecionado</span>
+                      <span class="upl-meta">
+                        <span id="tamanho-doc-principal"></span> · Adicionado
+                      </span>
+                      <span class="upl-track"><span class="upl-bar" style="transform: scaleX(1)"></span></span>
+                    </span>
+                    <span class="upl-end">
+                      <span class="upl-tick">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                      </span>
+                    </span>
+                  </span>
+                </div>
               </div>
-              <div class="file-input-wrapper">
-                <input type="file" id="arquivos-anexos" name="arquivosAnexos" class="hidden-file-input" multiple>
-                <label for="arquivos-anexos" class="btn-file-trigger secondary">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-                  </svg>
-                  <span>Adicionar Anexos</span>
-                </label>
+              <div id="erro-arquivo" class="campo-erro-msg">Selecione o arquivo do documento principal.</div>
+            </div>
+
+            <!-- Upload: Anexos Complementares (Dropzone) -->
+            <div class="upl" style="margin-top: 10px;">
+              <div class="upl-zone-wrap">
+                <div class="upl-zone" id="dropzone-anexos" tabindex="0" role="button" aria-label="Anexar documentos complementares" onclick="document.getElementById('arquivos-anexos').click()">
+                  <input type="file" id="arquivos-anexos" name="arquivosAnexos" class="hidden-file-input" style="display: none;" multiple>
+                  
+                  <div id="dropzone-anexos-idle" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <span class="upl-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
+                    </span>
+                    <span class="upl-say">
+                      <b>Anexos Complementares</b>
+                      <span>Clique ou arraste vários arquivos</span>
+                    </span>
+                  </div>
+
+                  <span class="upl-now" id="dropzone-anexos-filled" style="display: none;">
+                    <svg class="upl-page" width="36" height="36" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                      <path class="upl-page-line" d="M7.75 4A3.25 3.25 0 0 1 11 .75h16c.121 0 .238.048.323.134l10.793 10.793a.46.46 0 0 1 .134.323v24A3.25 3.25 0 0 1 35 39.25H11A3.25 3.25 0 0 1 7.75 36z" />
+                      <path class="upl-page-line" d="M27 .5V8a4 4 0 0 0 4 4h7.5" />
+                      <rect width="29" height="16" x="1" y="18" rx="8" fill="#15803d" />
+                      <text x="15.5" y="29.3" text-anchor="middle" class="upl-page-ext">FILES</text>
+                    </svg>
+                    <span class="upl-text">
+                      <span class="upl-name" id="qtd-anexos-complementares">0 anexos adicionados</span>
+                      <span class="upl-meta">
+                        Prontos para envio
+                      </span>
+                      <span class="upl-track"><span class="upl-bar" style="transform: scaleX(1)"></span></span>
+                    </span>
+                    <span class="upl-end">
+                      <span class="upl-tick">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                      </span>
+                    </span>
+                  </span>
+                </div>
               </div>
             </div>
 

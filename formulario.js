@@ -134,36 +134,123 @@ protegerPagina();
   const containerAnexosLista = document.getElementById('container-anexos-lista');
   const listaAnexosSelecionados = document.getElementById('lista-anexos-selecionados');
 
+  // Helper para formatar tamanho de arquivo
+  function formatarTamanho(bytes) {
+    if (bytes >= 1000000) return (bytes / 1000000).toFixed(1) + ' MB';
+    return Math.round(bytes / 1000) + ' KB';
+  }
+
+  // Setup do Dropzone Principal
+  const dropzonePrincipal = document.getElementById('dropzone-principal');
+  const dropzonePrincipalIdle = document.getElementById('dropzone-principal-idle');
+  const dropzonePrincipalFilled = document.getElementById('dropzone-principal-filled');
+  const extDocPrincipal = document.getElementById('ext-doc-principal');
+  const tamanhoDocPrincipal = document.getElementById('tamanho-doc-principal');
+
+  function triggerGulp(dropzone) {
+    dropzone.removeAttribute('data-gulp');
+    void dropzone.offsetWidth; // trigger reflow
+    dropzone.setAttribute('data-gulp', 'true');
+    setTimeout(() => dropzone.removeAttribute('data-gulp'), 460);
+  }
+
+  function setupDropzone(dropzone, inputElement, idleEl, filledEl) {
+    if (!dropzone || !inputElement) return;
+    
+    const prevent = e => { e.preventDefault(); e.stopPropagation(); };
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, prevent, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, () => {
+        dropzone.setAttribute('data-over', 'true');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, () => {
+        dropzone.removeAttribute('data-over');
+      }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      let dt = e.dataTransfer;
+      let files = dt.files;
+      if (files.length) {
+        if (inputElement.multiple) {
+           let dataTransfer = new DataTransfer();
+           Array.from(files).forEach(f => dataTransfer.items.add(f));
+           inputElement.files = dataTransfer.files;
+        } else {
+           let dataTransfer = new DataTransfer();
+           dataTransfer.items.add(files[0]);
+           inputElement.files = dataTransfer.files;
+        }
+        inputElement.dispatchEvent(new Event('change'));
+      }
+    });
+  }
+
+  setupDropzone(dropzonePrincipal, inputDocPrincipal);
+
   if (inputDocPrincipal) {
     inputDocPrincipal.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file && previewDocPrincipal) {
         previewDocPrincipal.textContent = file.name;
         previewDocPrincipal.title = file.name;
-      } else if (previewDocPrincipal) {
-        previewDocPrincipal.textContent = 'Nenhum selecionado';
+        
+        if (tamanhoDocPrincipal) tamanhoDocPrincipal.textContent = formatarTamanho(file.size);
+        if (extDocPrincipal) {
+          const ext = file.name.split('.').pop().toUpperCase();
+          extDocPrincipal.textContent = ext.substring(0, 4);
+        }
+
+        if (dropzonePrincipalIdle) dropzonePrincipalIdle.style.display = 'none';
+        if (dropzonePrincipalFilled) dropzonePrincipalFilled.style.display = 'flex';
+        if (dropzonePrincipal) triggerGulp(dropzonePrincipal);
+
+      } else {
+        if (previewDocPrincipal) previewDocPrincipal.textContent = 'Nenhum selecionado';
+        if (dropzonePrincipalIdle) dropzonePrincipalIdle.style.display = 'flex';
+        if (dropzonePrincipalFilled) dropzonePrincipalFilled.style.display = 'none';
       }
     });
   }
+
+  const dropzoneAnexos = document.getElementById('dropzone-anexos');
+  const dropzoneAnexosIdle = document.getElementById('dropzone-anexos-idle');
+  const dropzoneAnexosFilled = document.getElementById('dropzone-anexos-filled');
+  setupDropzone(dropzoneAnexos, inputAnexos);
 
   function renderizarListaAnexos() {
     if (!listaAnexosSelecionados || !containerAnexosLista) return;
     listaAnexosSelecionados.innerHTML = '';
     if (listaAnexosArquivos.length === 0) {
       containerAnexosLista.style.display = 'none';
-      if (previewQtdAnexos) previewQtdAnexos.textContent = '0 anexos adicionados';
+      if (previewQtdAnexos) previewQtdAnexos.textContent = '0 arquivos adicionados';
+      if (dropzoneAnexosIdle) dropzoneAnexosIdle.style.display = 'flex';
+      if (dropzoneAnexosFilled) dropzoneAnexosFilled.style.display = 'none';
       return;
     }
+    
     containerAnexosLista.style.display = 'block';
+    
     if (previewQtdAnexos) {
-      previewQtdAnexos.textContent = `${listaAnexosArquivos.length} anexo${listaAnexosArquivos.length > 1 ? 's' : ''}`;
+      previewQtdAnexos.textContent = `${listaAnexosArquivos.length} arquivo${listaAnexosArquivos.length > 1 ? 's' : ''}`;
     }
+    
+    if (dropzoneAnexosIdle) dropzoneAnexosIdle.style.display = 'none';
+    if (dropzoneAnexosFilled) dropzoneAnexosFilled.style.display = 'flex';
+    if (dropzoneAnexos) triggerGulp(dropzoneAnexos);
 
     listaAnexosArquivos.forEach((file, index) => {
       const tag = document.createElement('span');
       tag.className = 'anexo-tag-item';
       tag.innerHTML = `
-        <span>📎 ${file.name}</span>
+        <span>📁 ${file.name}</span>
         <span class="anexo-tag-remove" data-index="${index}" title="Remover anexo">&times;</span>
       `;
       listaAnexosSelecionados.appendChild(tag);
