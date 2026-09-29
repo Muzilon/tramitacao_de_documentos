@@ -23,9 +23,11 @@ A reconstrução do zero não deve repetir isso. Confira as regras da seção 5 
 
 O arquivo com o design de referência está em:
 
-**https://www.figma.com/design/N81a9PbiHbGLvuR5wG3qwW**
+**https://www.figma.com/design/gf2F5oM27eFBoFirIAnW1L/Vigen-%25E2%2580%2594-Sistema--SGI-?node-id=2-2&p=f&t=RI6SJZB0z4DeD9aV-0**
 
-Ele traz: o componente da barra lateral estática (a versão simples, sem colapso e sem animação, que o Eric pediu de volta), as telas de Login, Painel (Kanban) e Novo Documento com esse design aplicado, e três conceitos de baixa fidelidade para os módulos novos (Indicadores SGI, Minha Fila, Portal do SGI). É um ponto de partida visual, não um arquivo de componentes prontos para produção — refine antes de implementar.
+**https://claude.ai/artifact/JzZMVBUXuiVGA8hULsX3nw**
+
+Ele traz: o componente da barra lateral estática (a versão simples, sem colapso e sem animação, que o Eric pediu de volta), as telas de Login, Painel (Kanban) e Novo Documento com esse design aplicado, e varios modulos que não vão ser inseridos neste SAAS, será inserido em outro projeto muito maior que esse, o SAAS Docflow vai ser apenas de tramitação de documento, gestão de treinamento, Gestão de não conformidades e de envio de indicadores e gestão sob eles, não de ter os indicadores lá, o que vai ter de indicadores será baseado nas informações do próprio sistema. É um ponto de partida visual, não um arquivo de componentes prontos para produção — refine antes de implementar.
 
 ## O que NÃO está neste pacote
 
