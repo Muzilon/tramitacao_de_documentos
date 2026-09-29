@@ -1,0 +1,151 @@
+<title>Plano da Fundação DocSync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg-page:#fbfbfb;--bg-card:#ffffff;--bg-subtle:#f7f7f8;
+  --border-subtle:#e8eaed;--border-soft:#f1f3f4;
+  --text-primary:#404040;--text-secondary:#6c6d70;
+  --cor-primaria:#F69463;--cor-primaria-forte:#B4552A;--cor-pessego-suave:rgba(246,148,99,.15);
+  --fable-bg:rgba(184,80,87,.12);--fable-tx:#983F46;
+  --opus-bg:rgba(246,148,99,.15);--opus-tx:#A84F26;
+  --haiku-bg:rgba(102,141,88,.14);--haiku-tx:#4b6b40;
+  --ok-bg:rgba(102,141,88,.14);--ok-tx:#4b6b40;
+  --wait-bg:rgba(251,186,109,.22);--wait-tx:#8a5a10;
+  --font:"Inter",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--bg-page:#111113;--bg-card:#1c1c22;--bg-subtle:#16161c;
+  --border-subtle:#2e2e38;--border-soft:#25252d;--text-primary:#f3f4f6;--text-secondary:#a1a1aa;
+  --cor-primaria-forte:#F69463;--fable-bg:rgba(184,80,87,.28);--fable-tx:#f3a5aa;
+  --opus-bg:rgba(246,148,99,.28);--opus-tx:#fdba74;--haiku-bg:rgba(102,141,88,.28);--haiku-tx:#86efac;
+  --ok-bg:rgba(102,141,88,.28);--ok-tx:#86efac;--wait-bg:rgba(251,186,109,.28);--wait-tx:#FBBA6D;}}
+:root[data-theme="dark"]{
+  color-scheme:dark;--bg-page:#111113;--bg-card:#1c1c22;--bg-subtle:#16161c;
+  --border-subtle:#2e2e38;--border-soft:#25252d;--text-primary:#f3f4f6;--text-secondary:#a1a1aa;
+  --cor-primaria-forte:#F69463;--fable-bg:rgba(184,80,87,.28);--fable-tx:#f3a5aa;
+  --opus-bg:rgba(246,148,99,.28);--opus-tx:#fdba74;--haiku-bg:rgba(102,141,88,.28);--haiku-tx:#86efac;
+  --ok-bg:rgba(102,141,88,.28);--ok-tx:#86efac;--wait-bg:rgba(251,186,109,.28);--wait-tx:#FBBA6D;}
+*{box-sizing:border-box}
+body{background:var(--bg-page);color:var(--text-primary);font:500 14px/1.55 var(--font);-webkit-font-smoothing:antialiased;padding-inline:16px;padding-block:32px 64px}
+.wrap{max-width:1040px;margin:0 auto;display:grid;gap:36px}
+header{display:grid;gap:10px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cor-primaria-forte)}
+h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h2{font-size:19px;font-weight:800;letter-spacing:-.01em;margin:0 0 14px;text-wrap:balance}
+p{margin:0;max-width:72ch}
+.lead{color:var(--text-secondary);font-size:15px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--bg-subtle);border:1px solid var(--border-subtle);color:var(--text-secondary)}
+.card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:14px;padding:22px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.rules div{background:var(--bg-subtle);border-radius:10px;padding:14px;font-size:13px}
+.rules strong{display:block;font-size:13px;margin-bottom:4px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary);padding:8px 10px;border-bottom:1px solid var(--border-subtle)}
+td{padding:11px 10px;border-bottom:1px solid var(--border-soft);vertical-align:top}
+tr{break-inside:avoid}
+td.id{font-family:var(--mono);font-weight:500;color:var(--cor-primaria-forte);white-space:nowrap}
+td.nome{font-weight:700;min-width:130px}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;margin:0 4px 4px 0;white-space:nowrap}
+.fable{background:var(--fable-bg);color:var(--fable-tx)}
+.opus{background:var(--opus-bg);color:var(--opus-tx)}
+.haiku{background:var(--haiku-bg);color:var(--haiku-tx)}
+.ok{background:var(--ok-bg);color:var(--ok-tx)}
+.wait{background:var(--wait-bg);color:var(--wait-tx)}
+.valida{color:var(--text-secondary)}
+.seq{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;font-weight:600}
+.seq span{padding:5px 11px;border-radius:999px;background:var(--bg-subtle);border:1px solid var(--border-subtle)}
+.seq span.now{background:var(--cor-pessego-suave);border-color:rgba(246,148,99,.35);color:var(--cor-primaria-forte)}
+.seq i{font-style:normal;color:var(--text-secondary)}
+footer{font-size:12px;color:var(--text-secondary)}
+@media print{
+  @page{size:A4 landscape;margin:14mm}
+  body{padding:0;background:#fff}
+  .card{break-inside:auto}
+  h2{break-after:avoid}
+}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">DocSync · Reconstrução do DocFlow · SGI Grupo Monto</div>
+  <h1>Plano de construção da Fundação</h1>
+  <p class="lead">Fatias pequenas e verificáveis, cada uma funcionando de ponta a ponta (tela, regra, dados e permissão) e validada pelo Eric antes da próxima. Nenhuma fatia é uma reescrita total.</p>
+  <div class="meta"><span class="chip">Versão 1 · 28/09/2026</span><span class="chip">Decisões: Eric Machado</span><span class="chip">Implementação: Claude</span><span class="chip">Repositório: github.com/Muzilon/DocSync</span></div>
+</header>
+
+<section class="card">
+  <h2>Decisões tomadas</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Tema</th><th>Decisão</th></tr></thead>
+    <tbody>
+      <tr><td class="nome">Stack</td><td>React + TypeScript + Vite no front (tokens em variáveis CSS, sem Tailwind), API em Node + TypeScript (Fastify), testes com Vitest, Playwright e axe, verificação de segredos com gitleaks.</td></tr>
+      <tr><td class="nome">Fonte da verdade</td><td>PostgreSQL próprio. O Excel passa a ser só importação e exportação.</td></tr>
+      <tr><td class="nome">Hospedagem</td><td>Nenhuma no Azure por enquanto. Desenvolvimento e testes locais, com até cerca de 1.000 arquivos. A TI avalia o Azure depois de testes bem-sucedidos.</td></tr>
+      <tr><td class="nome">Revisões</td><td>Aprovado é estado final, sem "Reabrir". Uma revisão é um documento novo com vínculo ao documento de origem. O código é único na combinação código + revisão.</td></tr>
+      <tr><td class="nome">Reativação</td><td>Um cancelado volta ao status que tinha antes do cancelamento, pela mesma regra em todos os pontos da tela (resolve o P-17).</td></tr>
+      <tr><td class="nome">Telas</td><td>Sem versão específica para celular. O sistema é responsivo para computador e tablet, a partir de 768px, sem rolagem horizontal da página.</td></tr>
+      <tr><td class="nome">Cores</td><td>Seguir o arquivo do Figma, mantendo o contraste mínimo de 4,5:1 (texto do item ativo da barra lateral mais escuro no tema claro).</td></tr>
+      <tr><td class="nome">Migração</td><td>A importação da base antiga, preservando os IDs, entra na Fundação.</td></tr>
+      <tr><td class="nome">Offline</td><td>Rascunho local com reenvio automático, como fatia própria.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="card">
+  <h2>Regras que valem para todas as fatias</h2>
+  <div class="rules">
+    <div><strong>Nada decorativo</strong>Um link, botão ou menu só aparece quando o destino ou a ação já funciona de verdade.</div>
+    <div><strong>Segurança dentro do escopo</strong>Nenhum segredo no código, dado exibido sempre tratado, permissão verificada no servidor.</div>
+    <div><strong>Decisão antes do código</strong>Registro em <code>docs/decisoes/</code> e uma linha no CHANGELOG na data da mudança.</div>
+    <div><strong>Revisão e validação</strong>O agente de QA revisa cada fatia e o Eric valida antes da próxima começar.</div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Fatias da Fundação</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>Fatia</th><th>O que entrega</th><th>Como o Eric valida</th><th>Subagentes</th></tr></thead>
+    <tbody>
+      <tr><td class="id">F0</td><td class="nome">Configuração inicial</td><td>CLAUDE.md, CHANGELOG, decisões registradas, agentes adaptados, .gitignore, .env.example, gitleaks no pre-commit e no CI, esqueleto do front e da API compilando. Não entrega nenhuma tela.</td><td class="valida">Um commit com um segredo falso é bloqueado. Build e testes passam.</td><td><span class="tag opus">Claude</span><span class="tag haiku">Haiku</span></td></tr>
+      <tr><td class="id">F1</td><td class="nome">Casca + login Microsoft + perfis</td><td>Login pelo Entra ID, API que recusa chamadas sem token, perfil e área do usuário, "acesso não liberado" para conta sem perfil, sessão que expira, barra lateral estática e tokens de cor nos temas claro e escuro.</td><td class="valida">Entrar com a própria conta e ver o perfil. Uma conta sem grupo é barrada. Testar em 768px e 1440px.</td><td><span class="tag fable">Fable</span><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F2</td><td class="nome">Modelo de dados + cadastro</td><td>Tabelas de documento, evento e domínios. Formulário completo com validação visível, status inicial fixo em Recebido, arquivo principal obrigatório com tipo e tamanho restritos, evento de criação com o autor tirado do token, confirmação com link. O formulário não é limpo quando há erro.</td><td class="valida">Cadastrar um documento. Reenviar a mesma requisição não duplica. O perfil Leitor não consegue cadastrar.</td><td><span class="tag fable">Fable</span><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F3</td><td class="nome">Painel Kanban</td><td>5 colunas lidas do banco, cartões, contagem de devoluções, cores de prazo, KPIs com rótulo e regra coerentes, busca e filtro de área, modal de cancelados, uso completo por teclado. O Solicitante vê só a sua área.</td><td class="valida">Comparar lado a lado com o sistema antigo usando os mesmos dados de teste.</td><td><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F4</td><td class="nome">Detalhes + histórico</td><td>Modal nos modos visualizar e histórico, linha do tempo, diferenças campo a campo, foco preso no modal e Esc devolvendo o foco.</td><td class="valida">Abrir um documento pelo teclado e ver o evento de criação com o autor correto.</td><td><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F5</td><td class="nome">Mudança de status</td><td>Ações rápidas e "Atualizar Etapa". Transições validadas no servidor conforme o fluxo e o perfil. Responsável obrigatório nas devoluções e aprovações. Cancelar com Desfazer e reativar para o status anterior. Aviso de conflito de versão.</td><td class="valida">Tentar uma transição proibida e ver a recusa. A contagem de devoluções sobe.</td><td><span class="tag fable">Fable</span><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F6</td><td class="nome">Edição de dados</td><td>Mesma obrigatoriedade do cadastro. O status não é editado aqui. Evento de edição com "antes → depois". Confirmação ao sair sem salvar.</td><td class="valida">Editar um documento e conferir as diferenças no histórico.</td><td><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F7</td><td class="nome">Anexos posteriores + link da pasta</td><td>Envio de arquivos que nunca cria documento, evento de anexo e "Alterar link".</td><td class="valida">Anexar e ver o evento e a contagem de anexos atualizados.</td><td><span class="tag fable">Fable</span><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F8</td><td class="nome">Revisão técnica vinculada</td><td>Aba Revisão Técnica com escolha do documento de origem e código único na combinação código + revisão.</td><td class="valida">Criar a revisão 1 de um documento aprovado e ver as duas revisões ligadas.</td><td><span class="tag fable">Fable</span><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F9</td><td class="nome">Offline e fila de envio</td><td>Rascunho local, faixa de aviso offline, fila com intervalo crescente (1, 2, 5 e 15 min, até 5 tentativas), contador de pendências com "Tentar agora" e marca "não sincronizado".</td><td class="valida">Desligar a rede, cadastrar, religar e ver o envio sem duplicar.</td><td><span class="tag fable">Fable</span><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F10</td><td class="nome">Exportação CSV</td><td>Exportação a partir do Painel, filtrada ou completa, em UTF-8 com BOM e separador ponto e vírgula.</td><td class="valida">Abrir no Excel com os acentos corretos.</td><td><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F11</td><td class="nome">Administração</td><td>Áreas, tipos de documento e usuários, com acesso só para o Administrador.</td><td class="valida">A Qualidade não acessa a tela. Uma área nova aparece no formulário.</td><td><span class="tag fable">Fable</span><span class="tag opus">Opus</span></td></tr>
+      <tr><td class="id">F12</td><td class="nome">Importação + validação paralela</td><td>Importador da base antiga que preserva os IDs e o histórico, com prévia e relatório de erros. Comparação tela por tela com o sistema antigo.</td><td class="valida">Importar uma cópia e comparar. Aposentar o sistema antigo é um passo separado, aprovado pelo Eric.</td><td><span class="tag fable">Fable</span><span class="tag opus">Opus</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="card">
+  <h2>Depois da Fundação</h2>
+  <div class="seq"><span class="now">Fundação</span><i>→</i><span>Indicadores</span><i>→</i><span>Validade</span><i>→</i><span>Minha fila</span><i>→</i><span>Notificações</span><i>→</i><span>Lista mestra</span><i>→</i><span>Treinamentos</span><i>→</i><span>NC</span><i>→</i><span>Portal</span><i>→</i><span>Busca</span><i>→</i><span>Auditoria</span></div>
+  <p class="lead" style="margin-top:12px">Cada módulo será quebrado em fatias no mesmo formato quando chegar a vez dele.</p>
+</section>
+
+<section class="card">
+  <h2>Pendências</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Item</th><th>Situação</th><th>Bloqueia</th></tr></thead>
+    <tbody>
+      <tr><td>Registro do aplicativo no Entra ID pela TI (não exige assinatura Azure)</td><td><span class="tag wait">Aguardando</span></td><td>F1</td></tr>
+      <tr><td>Acesso do Graph a um site do SharePoint para as pastas dos documentos</td><td><span class="tag wait">Aguardando</span></td><td>Pastas reais em F2</td></tr>
+      <tr><td>Lista oficial de áreas</td><td><span class="tag wait">Aguardando</span></td><td>F2</td></tr>
+      <tr><td>Nome do produto na interface: DocFlow ou DocSync</td><td><span class="tag wait">Aguardando</span></td><td>F1</td></tr>
+      <tr><td>Stack, fonte da verdade, revisões, reativação, telas, migração e offline</td><td><span class="tag ok">Decidido</span></td><td>—</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>Especificação de origem: documentos 00 a 06 do pacote de reconstrução. Legenda dos modelos: Fable para arquitetura e regras complexas, Opus para implementação e telas, Haiku para pesquisa.</footer>
+</div>
